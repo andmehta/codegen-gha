@@ -1,0 +1,270 @@
+name: Non-ECR Deploys
+on:
+  workflow_call:
+    inputs:
+      current-commit-sha:
+        required: true
+        type: string
+      since-commit-sha:
+        required: true
+        type: string
+      plan:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCOUNT_ID_CI:
+        required: true
+      CLOUDFLARE_API_TOKEN_COPIED_FROM_CCI:
+        required: true
+      CLOUDFLARE_ACCOUNT_ID_COPIED_FROM_CCI_NOT_A_SECRET:
+        required: true
+      CLOUDFLARE_PAGES_READ_TOKEN:
+        required: true
+      CLOUDFLARE_API_TOKEN:
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        required: true
+      MARS_LATTICE_WEBSITE_PROXY_CF_TOKEN:
+        required: true
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  checks: write
+  actions: read
+env:
+  AWS_REGION: us-west-2
+  AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: '1'
+  AWS_ASSUME_ROLE_PROD: arn:aws:iam::355934147401:role/lattice-repo-github-oidc
+jobs:
+  mars_build_and_deploy:
+    name: mars_build_and_deploy
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 30
+    if: ${{ fromJSON(inputs.plan).mars_build_and_deploy || false }}
+    env:
+      GITHUB_CURRENT_COMMIT_SHA: ${{ inputs.current-commit-sha }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_PAGES_READ_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_READ_TOKEN }}
+    steps:
+      - name: Register post action for workspace cleanup
+        uses: velocibear/clean-after-action@9e9132154594236c9e4b1c904ead3c5c4000a18c
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Set up node and expand pnpm cache if possible
+        uses: ./.github/actions/setup-node-expand-pnpm-cache
+      - name: Install deps
+        uses: ./.github/actions/install-deps
+        with:
+          since: ${{ inputs.since-commit-sha }}
+          use-distributed-caching: 'false'
+      - name: Install only deps for this app
+        shell: bash
+        run: |
+          pnpm -F mars^... install
+          pnpm relay
+          pnpm -F mars^... build
+          pnpm -F mars... install
+      - name: Build mars
+        shell: bash
+        run: |
+          pnpm -F mars build
+      - name: Deploy mars
+        shell: bash
+        run: |
+          echo 'Deploying mars for real'
+          pnpm -F mars deploy-prod ||   (sleep 15 && pnpm -F mars deploy-prod) ||   (sleep 15 && pnpm -F mars deploy-prod)
+  mars_university_build_and_deploy:
+    name: mars_university_build_and_deploy
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 30
+    if: ${{ fromJSON(inputs.plan).mars_university_build_and_deploy || false }}
+    env:
+      GITHUB_CURRENT_COMMIT_SHA: ${{ inputs.current-commit-sha }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_PAGES_READ_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_READ_TOKEN }}
+    steps:
+      - name: Register post action for workspace cleanup
+        uses: velocibear/clean-after-action@9e9132154594236c9e4b1c904ead3c5c4000a18c
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Set up node and expand pnpm cache if possible
+        uses: ./.github/actions/setup-node-expand-pnpm-cache
+      - name: Install deps
+        uses: ./.github/actions/install-deps
+        with:
+          since: ${{ inputs.since-commit-sha }}
+          use-distributed-caching: 'false'
+      - name: Install only deps for this app
+        shell: bash
+        run: |
+          pnpm -F mars-university^... install
+          pnpm relay
+          pnpm -F mars-university^... build
+          pnpm -F mars-university... install
+      - name: Build mars-university
+        shell: bash
+        run: |
+          pnpm -F mars-university build
+      - name: Deploy mars-university
+        shell: bash
+        run: |
+          echo 'Deploying mars-university for real'
+          pnpm -F mars-university deploy-prod ||   (sleep 15 && pnpm -F mars-university deploy-prod) ||   (sleep 15 && pnpm -F mars-university deploy-prod)
+  mars_language_files_build_and_deploy:
+    name: mars_language_files_build_and_deploy
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 30
+    if: ${{ fromJSON(inputs.plan).mars_language_files_build_and_deploy || false }}
+    env:
+      GITHUB_CURRENT_COMMIT_SHA: ${{ inputs.current-commit-sha }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_PAGES_READ_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_READ_TOKEN }}
+    steps:
+      - name: Register post action for workspace cleanup
+        uses: velocibear/clean-after-action@9e9132154594236c9e4b1c904ead3c5c4000a18c
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Set up node and expand pnpm cache if possible
+        uses: ./.github/actions/setup-node-expand-pnpm-cache
+      - name: Install deps
+        uses: ./.github/actions/install-deps
+        with:
+          since: ${{ inputs.since-commit-sha }}
+          use-distributed-caching: 'false'
+      - name: Install only deps for this app
+        shell: bash
+        run: |
+          pnpm -F mars-language-files^... install
+          pnpm relay
+          pnpm -F mars-language-files^... build
+          pnpm -F mars-language-files... install
+      - name: Build mars-language-files
+        shell: bash
+        run: |
+          pnpm -F mars-language-files build
+      - name: Deploy mars-language-files
+        shell: bash
+        run: |
+          echo 'Deploying mars-language-files for real'
+          pnpm -F mars-language-files deploy-prod ||   (sleep 15 && pnpm -F mars-language-files deploy-prod) ||   (sleep 15 && pnpm -F mars-language-files deploy-prod)
+  mars_lattice_website_build_and_deploy:
+    name: mars_lattice_website_build_and_deploy
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 30
+    if: ${{ fromJSON(inputs.plan).mars_lattice_website_build_and_deploy || false }}
+    env:
+      GITHUB_CURRENT_COMMIT_SHA: ${{ inputs.current-commit-sha }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.MARS_LATTICE_WEBSITE_PROXY_CF_TOKEN }}
+    steps:
+      - name: Register post action for workspace cleanup
+        uses: velocibear/clean-after-action@9e9132154594236c9e4b1c904ead3c5c4000a18c
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Set up node and expand pnpm cache if possible
+        uses: ./.github/actions/setup-node-expand-pnpm-cache
+      - name: Install deps
+        uses: ./.github/actions/install-deps
+        with:
+          since: ${{ inputs.since-commit-sha }}
+          use-distributed-caching: 'false'
+      - name: Deploy mars-lattice-website
+        shell: bash
+        run: |
+          pnpm -F mars-lattice-website deploy-prod ||   (sleep 15 && pnpm -F mars-lattice-website deploy-prod) ||   (sleep 15 && pnpm -F mars-lattice-website deploy-prod)
+  mars_integrations_gateway_build_and_deploy:
+    name: mars_integrations_gateway_build_and_deploy
+    runs-on: depot-ubuntu-24.04
+    timeout-minutes: 30
+    if: ${{ fromJSON(inputs.plan).mars_integrations_gateway_build_and_deploy || false }}
+    env:
+      GITHUB_CURRENT_COMMIT_SHA: ${{ inputs.current-commit-sha }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_PAGES_READ_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_READ_TOKEN }}
+    steps:
+      - name: Register post action for workspace cleanup
+        uses: velocibear/clean-after-action@9e9132154594236c9e4b1c904ead3c5c4000a18c
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Set up node and expand pnpm cache if possible
+        uses: ./.github/actions/setup-node-expand-pnpm-cache
+      - name: Install deps
+        uses: ./.github/actions/install-deps
+        with:
+          since: ${{ inputs.since-commit-sha }}
+          use-distributed-caching: 'false'
+      - name: Install only deps for this app
+        shell: bash
+        run: |
+          pnpm -F mars-integrations-gateway^... install
+          pnpm relay
+          pnpm -F mars-integrations-gateway^... build
+          pnpm -F mars-integrations-gateway... install
+      - name: Build mars-integrations-gateway
+        shell: bash
+        run: |
+          pnpm -F mars-integrations-gateway build
+      - name: Deploy mars-integrations-gateway
+        shell: bash
+        run: |
+          echo 'Deploying mars-integrations-gateway for real'
+          pnpm -F mars-integrations-gateway deploy-prod ||   (sleep 15 && pnpm -F mars-integrations-gateway deploy-prod) ||   (sleep 15 && pnpm -F mars-integrations-gateway deploy-prod)
+  meepo_build_and_deploy:
+    name: Meepo build and deploy
+    runs-on: depot-ubuntu-24.04-8
+    timeout-minutes: 30
+    if: ${{ fromJSON(inputs.plan).meepo_build_and_deploy || false }}
+    steps:
+      - name: Register post action for workspace cleanup
+        uses: velocibear/clean-after-action@9e9132154594236c9e4b1c904ead3c5c4000a18c
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Set up node and expand pnpm cache if possible
+        uses: ./.github/actions/setup-node-expand-pnpm-cache
+      - name: Install deps
+        uses: ./.github/actions/install-deps
+        with:
+          since: ${{ inputs.since-commit-sha }}
+          use-distributed-caching: 'false'
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ASSUME_ROLE_PROD }}
+          role-session-name: gharolesessionprod
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Meepo build and deploy
+        uses: ./.github/actions/meepo-build-and-deploy
+        with:
+          command: buildAndDeploy
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        env:
+          AWS_ASSUME_ROLE_PROD: arn:aws:iam::767397844093:role/lattice-repo-github-oidc
+        with:
+          role-to-assume: ${{ env.AWS_ASSUME_ROLE_PROD }}
+          role-session-name: gharolesessionsecondary
+          aws-region: eu-central-1
+      - name: Meepo build and deploy (EMEA)
+        uses: ./.github/actions/meepo-build-and-deploy
+        env:
+          AWS_REGION: eu-central-1
+          DEPLOYMENT: emea-prod-1
+          ECR_ACCOUNT: '767397844093'
+        with:
+          command: buildAndDeploy:deployment

@@ -1,0 +1,96 @@
+import YAML from 'yaml';
+
+import { EnvConf, Input } from './common';
+import { NormalJob } from './job';
+
+interface WorkflowTriggerNarrowers {
+  paths?: string[];
+  branches?: string[];
+}
+interface Schedule {
+  cron: string;
+}
+interface Secret {
+  required: boolean;
+}
+interface WorkflowCall {
+  inputs: Record<string, Input<any>>;
+  secrets: Record<string, Secret>;
+}
+
+interface WorkflowTrigger {
+  merge_queue?: WorkflowTriggerNarrowers | null;
+  pull_request?: WorkflowTriggerNarrowers | null;
+  merge_group?: WorkflowTriggerNarrowers | null;
+  push?: WorkflowTriggerNarrowers | null;
+  workflow_dispatch?: WorkflowCall | null;
+  workflow_call?: WorkflowCall;
+  schedule?: Schedule;
+}
+
+export interface WorkflowConf {
+  name: string;
+  trigger: WorkflowTrigger;
+  jobs: Record<string, NormalJob>;
+  env: EnvConf;
+  // inputs: Record<string, Input<any>>;
+  permissions: Permissions;
+}
+
+type ReadOrWrite = 'read' | 'write';
+
+interface Permissions {
+  'id-token': ReadOrWrite;
+  contents: ReadOrWrite;
+  'pull-requests': ReadOrWrite;
+  checks: ReadOrWrite;
+  actions: ReadOrWrite;
+}
+
+export class Workflow {
+  private name: string;
+  private trigger: WorkflowTrigger;
+  private jobs: Record<string, NormalJob>;
+  private env: EnvConf;
+  private permissions: Permissions;
+
+  constructor(conf: WorkflowConf) {
+    const { name, trigger, jobs, env, permissions } = conf;
+
+    this.name = name;
+    this.trigger = trigger;
+    this.jobs = jobs;
+    this.env = env;
+    this.permissions = permissions;
+  }
+
+  public serialize(): string {
+    const jobMap: Record<string, YAML.Document> = {};
+    Object.entries(this.jobs).forEach(([jName, jDef]) => {
+      jobMap[jName] = jDef.toYaml();
+    });
+    const doc = new YAML.Document(
+      {
+        name: this.name,
+        on: this.trigger,
+        permissions: this.permissions,
+        env: this.env,
+        jobs: jobMap,
+      },
+      // TODO: i think i need to upgrade the lib to get this and put a generated comment
+      // {
+      //   commentBefore: '',
+      // },
+    );
+
+    return doc.toString({
+      lineWidth: 0,
+      doubleQuotedMinMultiLineLength: 0,
+      singleQuote: true,
+      nullStr: '',
+    });
+  }
+  public getName() {
+    return this.name;
+  }
+}

@@ -1,0 +1,76 @@
+name: Continuous Integration
+on:
+  pull_request:
+  merge_queue:
+  push:
+    branches:
+      - main
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  actions: write
+  checks: write
+env:
+  AWS_REGION: us-west-2
+  AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: '1'
+  SQITCH_IMAGE: public.ecr.aws/z2c7x8q5/sqitch:v1.3.0
+  AWS_ASSUME_ROLE_PROD: arn:aws:iam::355934147401:role/lattice-repo-github-oidc
+  PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING: '1'
+jobs:
+  my_job:
+    name: my_job
+    runs-on: depot-ubuntu-24.04-4
+    timeout-minutes: 15
+    if: ${{ fromJSON(inputs.plan).run_my_job || false }}
+    services:
+      postgres:
+        image: public.ecr.aws/docker/library/postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      moto:
+        image: public.ecr.aws/z2c7x8q5/motoserver:latest
+        env:
+          MOTO_PORT: '4566'
+        ports:
+          - 4566:4566
+        options: --health-cmd="/usr/bin/curl --fail http://127.0.0.1:4566" --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: public.ecr.aws/docker/library/redis:7-alpine
+        env: {}
+        ports:
+          - 6379:6379
+        options: ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Run tests
+        shell: bash
+        run: |
+          pnpm -F [...${{ inputs.since_commit_sha }}] test
+            7
+            22
+          null
+      - name: Run tests
+        shell: bash
+        run: |
+          INPUT_FILTER_EXCL=( ${{
+            fromJSON(inputs.job_data)
+              .prod_app_proto_branch_consumers[matrix.pkg]
+              .pnpm_filter_deps_excl
+          }} )
+          INPUT_FILTER_INCL=( ${{
+            fromJSON(inputs.job_data)
+              .prod_app_proto_branch_consumers[matrix.pkg]
+              .pnpm_filter_deps_incl
+          }} )
+          pnpm "${INPUT_FILTER_EXCL[@]}" install --frozen-lockfile
+          pnpm relay # because our frontends depend on protos for reasons that are Not Good™
+          pnpm "${INPUT_FILTER_EXCL[@]}" build
+          pnpm "${INPUT_FILTER_INCL[@]}" install --frozen-lockfile
