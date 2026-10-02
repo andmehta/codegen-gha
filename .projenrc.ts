@@ -1,7 +1,12 @@
-import { javascript, typescript } from 'projen';
+import { github, javascript, typescript } from 'projen';
 const project = new typescript.TypeScriptProject({
   name: 'codegen-gha',
   packageManager: javascript.NodePackageManager.PNPM,
+  githubOptions: {
+    // Use the default GITHUB_TOKEN instead of requiring a PROJEN_GITHUB_TOKEN PAT secret.
+    // Note: pushes made with GITHUB_TOKEN don't re-trigger other workflows.
+    projenCredentials: github.GithubCredentials.fromPersonalAccessToken({ secret: 'GITHUB_TOKEN' }),
+  },
   // Only emit the corepack `packageManager` field, not `devEngines.packageManager`.
   // pnpm warns and ignores `packageManager` when both are present.
   addPackageManagerToDevEngines: false,
