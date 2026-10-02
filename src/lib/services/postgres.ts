@@ -7,7 +7,7 @@ export const postgres = new Service({
     POSTGRES_HOST_AUTH_METHOD: 'trust',
   },
   ports: {
-    '5432': 5432,
+    5432: 5432,
   },
   options: [
     '--health-cmd pg_isready',

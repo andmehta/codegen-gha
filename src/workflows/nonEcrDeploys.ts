@@ -1,9 +1,9 @@
 import { bash, ghaTemplateString } from '../components/bashString';
+import { IfConditionPlan } from '../components/common';
+import { NormalJob, RUNS_ON } from '../components/job';
 import { ActionStep, BashStep } from '../components/step';
 import { Workflow } from '../components/workflow';
-import { NormalJob, RUNS_ON } from '../components/job';
 import { checkoutDepth2, workspaceCleanupStep, setupStep, installStep } from '../lib/steps/setup';
-import { IfConditionPlan } from '../components/common';
 
 function makeMarsDeployJob({
   planKey,
@@ -68,7 +68,7 @@ export const nonEcrDeploys = new Workflow({
       inputs: {
         'current-commit-sha': { required: true, type: 'string' },
         'since-commit-sha': { required: true, type: 'string' },
-        plan: { required: true, type: 'string' },
+        'plan': { required: true, type: 'string' },
       },
       secrets: {
         AWS_ACCOUNT_ID_CI: { required: true },
@@ -83,10 +83,10 @@ export const nonEcrDeploys = new Workflow({
   },
   permissions: {
     'id-token': 'write',
-    contents: 'read',
+    'contents': 'read',
     'pull-requests': 'write',
-    checks: 'write',
-    actions: 'read',
+    'checks': 'write',
+    'actions': 'read',
   },
   env: {
     AWS_REGION: 'us-west-2',

@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 
-import { undefinedIfEmpty, WorkflowComponent } from './common';
 import { BashString } from './bashString';
+import { undefinedIfEmpty, WorkflowComponent } from './common';
 
 export interface BashStepConf {
   name: string;

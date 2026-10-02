@@ -1,5 +1,5 @@
-import { ActionStep } from '../../components/step';
 import { ghaTemplateString } from '../../components/bashString';
+import { ActionStep } from '../../components/step';
 
 export const checkoutDepth2 = new ActionStep({
   name: 'Checkout',
@@ -24,7 +24,7 @@ export const installStep = new ActionStep({
   name: 'Install deps',
   actionSpecifier: './.github/actions/install-deps',
   params: {
-    since: ghaTemplateString('inputs.since-commit-sha'),
+    'since': ghaTemplateString('inputs.since-commit-sha'),
     'use-distributed-caching': 'false',
   },
 });
