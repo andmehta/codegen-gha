@@ -2,10 +2,10 @@ import YAML from 'yaml';
 import { ghaTemplateString } from './bashString';
 
 export abstract class WorkflowComponent {
-  abstract toYaml(): YAML.Document;
   constructor() {
     // pass
   }
+  abstract toYaml(): YAML.Document;
 }
 
 export type EnvConf = Record<string, string>;
