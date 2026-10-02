@@ -1,8 +1,8 @@
 import YAML from 'yaml';
 
 import { WorkflowComponent, IfCondition, undefinedIfEmpty } from './common';
-import { StepUnion } from './step';
 import { Service } from './service';
+import { StepUnion } from './step';
 
 const RUNS_ON_SPECIFIERS = [
   'ubuntu-latest',
@@ -88,14 +88,14 @@ export class NormalJob extends WorkflowComponent {
       serviceMap[sName] = sDef.toYaml();
     });
     return new YAML.Document({
-      name: this.name,
-      needs: undefinedIfEmpty(this.needs),
+      'name': this.name,
+      'needs': undefinedIfEmpty(this.needs),
       'runs-on': this.runsOn,
       'timeout-minutes': this.timeoutMinutes,
-      if: this.condition.toYaml(),
-      services: undefinedIfEmpty(serviceMap),
-      env: undefinedIfEmpty(this.env),
-      steps: this.steps.map(s => s.toYaml()),
+      'if': this.condition.toYaml(),
+      'services': undefinedIfEmpty(serviceMap),
+      'env': undefinedIfEmpty(this.env),
+      'steps': this.steps.map(s => s.toYaml()),
     });
   }
 }

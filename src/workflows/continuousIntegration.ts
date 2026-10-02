@@ -1,12 +1,12 @@
 import { bash } from '../components/bashString';
+import { IfConditionPlan } from '../components/common';
+import { NormalJob, RUNS_ON } from '../components/job';
 import { BashStep } from '../components/step';
 import { Workflow } from '../components/workflow';
-import { NormalJob, RUNS_ON } from '../components/job';
+import { moto } from '../lib/services/moto';
 import { postgres } from '../lib/services/postgres';
 import { redis } from '../lib/services/redis';
-import { moto } from '../lib/services/moto';
 import { checkoutDepth2 } from '../lib/steps/setup';
-import { IfConditionPlan } from '../components/common';
 
 const testStep = new BashStep({
   name: 'Run tests',
@@ -43,10 +43,10 @@ export const continuousIntegration = new Workflow({
   trigger: { pull_request: null, merge_queue: null, push: { branches: ['main'] } },
   permissions: {
     'id-token': 'write',
-    contents: 'read',
+    'contents': 'read',
     'pull-requests': 'write',
-    actions: 'write',
-    checks: 'write',
+    'actions': 'write',
+    'checks': 'write',
   },
   env: {
     AWS_REGION: 'us-west-2',

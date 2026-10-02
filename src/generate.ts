@@ -1,5 +1,5 @@
-import path from 'node:path';
 import fs from 'node:fs';
+import path from 'node:path';
 import { workflows } from './workflows';
 
 const OUTPUT_DIR = path.join(__dirname, '..', 'generated-workflows');

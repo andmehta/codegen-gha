@@ -41,10 +41,10 @@ type ReadOrWrite = 'read' | 'write';
 
 interface Permissions {
   'id-token': ReadOrWrite;
-  contents: ReadOrWrite;
+  'contents': ReadOrWrite;
   'pull-requests': ReadOrWrite;
-  checks: ReadOrWrite;
-  actions: ReadOrWrite;
+  'checks': ReadOrWrite;
+  'actions': ReadOrWrite;
 }
 
 export class Workflow {
