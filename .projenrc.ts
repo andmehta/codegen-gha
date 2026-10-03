@@ -43,7 +43,10 @@ const project = new typescript.TypeScriptProject({
   // Vitest (not Jest) is used for tests; see the `test` task override and vitest.config.ts below.
   jest: false,
   devDeps: ['vitest', '@vitest/coverage-v8'],
-  gitignore: ['.context/'],
+  gitignore: ['.context/', '/test-reports/'],
+  npmIgnoreOptions: {
+    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts'],
+  },
   // description: undefined,        /* The description is just a string that helps people understand the purpose of the package. */
   // packageName: undefined,        /* The "name" in package.json. */
 });
@@ -56,9 +59,6 @@ project.addTask('test:watch', {
   description: 'Run vitest in watch mode',
   exec: 'vitest',
 });
-
-project.gitignore.exclude('/test-reports/');
-project.npmignore?.exclude('/coverage/', '/test-reports/', '/vitest.config.ts');
 
 // Rewrites the `.ts` extensions above to `.js` at emit; not yet in projen's typed options.
 project.tsconfig?.file.addOverride('compilerOptions.rewriteRelativeImportExtensions', true);

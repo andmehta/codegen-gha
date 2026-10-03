@@ -32,6 +32,7 @@ jspm_packages/
 .yarn-integrity
 .cache
 .context/
+/test-reports/
 !/.github/workflows/build.yml
 /dist/changelog.md
 /dist/version.txt
@@ -47,5 +48,4 @@ jspm_packages/
 /dist/
 !/.eslintrc.json
 !/projenrc/tsconfig.json
-/test-reports/
 !/.projenrc.ts
