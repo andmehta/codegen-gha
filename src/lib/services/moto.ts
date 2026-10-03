@@ -1,4 +1,4 @@
-import { Service } from '../../components/service';
+import { Service } from '../../components/service.ts';
 
 export const moto = new Service({
   image: 'public.ecr.aws/z2c7x8q5/motoserver:latest',

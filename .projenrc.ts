@@ -28,13 +28,39 @@ const project = new typescript.TypeScriptProject({
     },
   },
   deps: ['tslib', 'yaml'], /* Runtime dependencies of this module. */
-  gitignore: ['.context/'],
+  // This package is ESM-only: no CommonJS output, no `require()`.
+  tsconfig: {
+    compilerOptions: {
+      target: 'ES2022',
+      lib: ['ES2022'],
+      module: 'NodeNext',
+      moduleResolution: javascript.TypeScriptModuleResolution.NODE_NEXT,
+      isolatedModules: true,
+      // Allows literal `.ts` extensions in relative imports instead of NodeNext's required `.js`.
+      allowImportingTsExtensions: true,
+    },
+  },
+  // Vitest (not Jest) is used for tests; see the `test` task override and vitest.config.ts below.
+  jest: false,
+  devDeps: ['vitest', '@vitest/coverage-v8'],
+  gitignore: ['.context/', '/test-reports/'],
+  npmIgnoreOptions: {
+    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts'],
+  },
   // description: undefined,        /* The description is just a string that helps people understand the purpose of the package. */
-  // devDeps: [],                   /* Build dependencies for this module. */
   // packageName: undefined,        /* The "name" in package.json. */
 });
 
-// add this script to package.json eventually
-// "codegen": "labuild run ./src/generate.ts"
-// run with `pnpm exec projen`
+project.package.addField('type', 'module');
+
+// Prepend so tests run before the eslint step TypeScriptProject already added.
+project.testTask.prependExec('vitest run --coverage');
+project.addTask('test:watch', {
+  description: 'Run vitest in watch mode',
+  exec: 'vitest',
+});
+
+// Rewrites the `.ts` extensions above to `.js` at emit; not yet in projen's typed options.
+project.tsconfig?.file.addOverride('compilerOptions.rewriteRelativeImportExtensions', true);
+
 project.synth();

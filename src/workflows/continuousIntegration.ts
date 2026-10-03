@@ -1,12 +1,12 @@
-import { bash } from '../components/bashString';
-import { IfConditionPlan } from '../components/common';
-import { NormalJob, RUNS_ON } from '../components/job';
-import { BashStep } from '../components/step';
-import { Workflow } from '../components/workflow';
-import { moto } from '../lib/services/moto';
-import { postgres } from '../lib/services/postgres';
-import { redis } from '../lib/services/redis';
-import { checkoutDepth2 } from '../lib/steps/setup';
+import { bash } from '../components/bashString.ts';
+import { IfConditionPlan } from '../components/common.ts';
+import { NormalJob, RUNS_ON } from '../components/job.ts';
+import { BashStep } from '../components/step.ts';
+import { Workflow } from '../components/workflow.ts';
+import { moto } from '../lib/services/moto.ts';
+import { postgres } from '../lib/services/postgres.ts';
+import { redis } from '../lib/services/redis.ts';
+import { checkoutDepth2 } from '../lib/steps/setup.ts';
 
 const testStep = new BashStep({
   name: 'Run tests',

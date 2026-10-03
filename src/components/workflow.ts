@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 
-import { EnvConf, Input } from './common';
-import { NormalJob } from './job';
+import { EnvConf, Input } from './common.ts';
+import { NormalJob } from './job.ts';
 
 interface WorkflowTriggerNarrowers {
   paths?: string[];

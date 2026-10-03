@@ -1,5 +1,5 @@
 import YAML from 'yaml';
-import { ghaTemplateString } from './bashString';
+import { ghaTemplateString } from './bashString.ts';
 
 export abstract class WorkflowComponent {
   constructor() {

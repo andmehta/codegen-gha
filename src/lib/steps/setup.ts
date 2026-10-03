@@ -1,5 +1,5 @@
-import { ghaTemplateString } from '../../components/bashString';
-import { ActionStep } from '../../components/step';
+import { ghaTemplateString } from '../../components/bashString.ts';
+import { ActionStep } from '../../components/step.ts';
 
 export const checkoutDepth2 = new ActionStep({
   name: 'Checkout',
