@@ -79,3 +79,7 @@ Then run it from the command line:
 ```sh
 pnpm exec ts-node scripts/generate-workflows.ts
 ```
+
+## Contributing
+
+PR titles are checked for a semantic type prefix (e.g. `feat: ...`, `fix: ...`, `chore: ...`, `docs: ...`); pick whichever matches the change.
