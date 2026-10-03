@@ -47,7 +47,15 @@ interface Permissions {
   'actions': ReadOrWrite;
 }
 
+// A loader that dynamically imports a workflow file (e.g. the CLI's tsx-based loader) may end
+// up executing it in a separate module realm, where `instanceof Workflow` would fail even though
+// the instance is a "real" Workflow. Symbol.for() is keyed off Node's process-wide symbol
+// registry, so it stays identical across realms and lets callers detect Workflow instances safely.
+export const WORKFLOW_TAG = Symbol.for('codegen-gha.Workflow');
+
 export class Workflow {
+  public readonly [WORKFLOW_TAG] = true;
+
   private name: string;
   private trigger: WorkflowTrigger;
   private jobs: Record<string, NormalJob>;

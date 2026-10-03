@@ -65,19 +65,43 @@ jobs:
           pnpm test
 ```
 
-To actually generate the workflow file, write the YAML out wherever your build tooling expects it, e.g. a `scripts/generate-workflows.ts` in your repo:
+## Generating workflow files
 
-```ts
-import fs from 'node:fs';
-import { ci } from './ci';
+`codegen-gha` ships a `cgha` CLI.
 
-fs.writeFileSync('.github/workflows/ci.yml', ci.serialize());
-```
-
-Then run it from the command line:
+### Quick start: `cgha init`
 
 ```sh
-pnpm exec ts-node scripts/generate-workflows.ts
+pnpm exec cgha init
+```
+
+This sets up a new repo in one go: writes a default `codegen-gha.yaml`, adds a `workflows/example.ts` with a sample `Workflow`, and immediately runs `generate` so you end up with a working `.github/workflows/example.gen.yaml`. It refuses to run if `codegen-gha.yaml` or `workflows/example.ts` already exist, so it's safe to try in an existing repo.
+
+### Config reference
+
+Add a `codegen-gha.yaml` to the root of your repo:
+
+```yaml
+include: "workflows/*.ts"   # glob of files to scan for exported Workflow instances
+outDir: .github/workflows   # where to write generated files (default: ".", the cwd)
+suffix: .gen.yaml           # filename suffix, marks the file as generated (default shown)
+commentHeader: "this file is generated using cgha generate {file}"  # {file} is replaced with the source path (default shown)
+```
+
+Then run:
+
+```sh
+pnpm exec cgha generate
+```
+
+This scans every file matching `include`, picks up any exported `Workflow` instance, and writes one file per workflow into `outDir` as `<slugified-name><suffix>` — e.g. the `ci.ts` example above becomes `.github/workflows/ci.gen.yaml`:
+
+```yaml
+# this file is generated using cgha generate workflows/ci.ts
+name: CI
+on:
+  pull_request:
+...
 ```
 
 ## Contributing

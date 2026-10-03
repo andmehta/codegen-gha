@@ -21,13 +21,16 @@ const project = new typescript.TypeScriptProject({
   testdir: 'test',
   typescriptVersion: '~6.0.0',
   // pnpm 10+ blocks package build (postinstall) scripts by default, so this allow lists it
-  allowScripts: ['unrs-resolver'],
+  allowScripts: ['unrs-resolver', 'esbuild'],
   pnpmOptions: {
     workspaceYamlOptions: {
-      allowBuilds: { 'unrs-resolver': true },
+      allowBuilds: { 'unrs-resolver': true, 'esbuild': true },
     },
   },
-  deps: ['tslib', 'yaml'], /* Runtime dependencies of this module. */
+  deps: ['tslib', 'yaml', 'glob@^13', 'tsx', 'yargs'], /* Runtime dependencies of this module. */
+  bin: {
+    cgha: 'lib/cli/index.js',
+  },
   // This package is ESM-only: no CommonJS output, no `require()`.
   tsconfig: {
     compilerOptions: {
@@ -42,7 +45,7 @@ const project = new typescript.TypeScriptProject({
   },
   // Vitest (not Jest) is used for tests; see the `test` task override and vitest.config.ts below.
   jest: false,
-  devDeps: ['vitest', '@vitest/coverage-v8'],
+  devDeps: ['vitest', '@vitest/coverage-v8', '@types/yargs'],
   gitignore: ['.context/', '/test-reports/'],
   npmIgnoreOptions: {
     ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts'],

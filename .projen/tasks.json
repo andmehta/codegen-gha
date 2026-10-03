@@ -282,7 +282,7 @@
             "--peer",
             "--no-deprecated",
             "--dep=dev,prod,peer,optional",
-            "--filter=@vitest/coverage-v8,eslint-import-resolver-typescript,eslint-plugin-import,projen,ts-node,vitest,tslib,yaml"
+            "--filter=@types/yargs,@vitest/coverage-v8,eslint-import-resolver-typescript,eslint-plugin-import,projen,ts-node,vitest,tslib,tsx,yaml,yargs"
           ]
         },
         {
@@ -294,6 +294,7 @@
             "update",
             "@stylistic/eslint-plugin",
             "@types/node",
+            "@types/yargs",
             "@typescript-eslint/eslint-plugin",
             "@typescript-eslint/parser",
             "@vitest/coverage-v8",
@@ -306,8 +307,11 @@
             "ts-node",
             "typescript",
             "vitest",
+            "glob",
             "tslib",
-            "yaml"
+            "tsx",
+            "yaml",
+            "yargs"
           ]
         },
         {
