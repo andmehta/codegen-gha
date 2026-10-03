@@ -66,4 +66,8 @@ project.addTask('test:watch', {
 // Rewrites the `.ts` extensions above to `.js` at emit; not yet in projen's typed options.
 project.tsconfig?.file.addOverride('compilerOptions.rewriteRelativeImportExtensions', true);
 
+// `cgha init` reads this real, type-checked source file at runtime and rewrites it into the
+// scaffolded example, rather than keeping a separate hand-typed copy that can drift from it.
+project.postCompileTask.exec('cp src/cli/example-workflow.ts lib/cli/example-workflow.ts');
+
 project.synth();

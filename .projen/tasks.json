@@ -193,7 +193,12 @@
     },
     "post-compile": {
       "name": "post-compile",
-      "description": "Runs after successful compilation"
+      "description": "Runs after successful compilation",
+      "steps": [
+        {
+          "exec": "cp src/cli/example-workflow.ts lib/cli/example-workflow.ts"
+        }
+      ]
     },
     "post-upgrade": {
       "name": "post-upgrade",
