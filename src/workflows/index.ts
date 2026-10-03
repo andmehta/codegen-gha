@@ -1,4 +1,4 @@
-import { continuousIntegration } from './continuousIntegration.ts';
-import { nonEcrDeploys } from './nonEcrDeploys.ts';
+import { ci } from './ci.ts';
+import { verifyGeneration } from './verify-generation/index.ts';
 
-export const workflows = [continuousIntegration, nonEcrDeploys];
+export const workflows = [ci, verifyGeneration];

@@ -1,0 +1,41 @@
+name: Verify Generation
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+permissions:
+  id-token: read
+  contents: read
+  pull-requests: read
+  actions: read
+  checks: read
+env: {}
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ true }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.33.0
+      - name: Install dependencies
+        shell: bash
+        run: |-
+          pnpm install --frozen-lockfile
+      - name: Verify generated workflow files are up to date
+        shell: bash
+        run: |
+          pnpm exec tsx src/generate.ts
+
+          git add src/generated-workflows
+          if ! git diff --staged --quiet -- src/generated-workflows; then
+            echo "::error::Generated workflow files are out of date. Run 'pnpm exec tsx src/generate.ts' and commit the result."
+            git diff --staged -- src/generated-workflows
+            exit 1
+          fi
