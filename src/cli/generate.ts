@@ -3,7 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { glob } from 'glob';
 import { tsImport } from 'tsx/esm/api';
-import { loadConfig } from './config.ts';
+import { CodegenGhaConfig } from './config.ts';
 import { Workflow, WORKFLOW_TAG } from '../components/workflow.ts';
 
 function isWorkflow(value: unknown): value is Workflow {
@@ -23,8 +23,7 @@ function importWorkflowModule(absPath: string): Promise<Record<string, unknown>>
   return import(url);
 }
 
-export async function generate(cwd: string = process.cwd()): Promise<void> {
-  const config = loadConfig(cwd);
+export async function generate(config: CodegenGhaConfig, cwd: string = process.cwd()): Promise<void> {
   const outDir = path.resolve(cwd, config.outDir);
   fs.mkdirSync(outDir, { recursive: true });
 

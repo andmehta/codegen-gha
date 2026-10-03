@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { loadConfig } from './config.ts';
 import { generate } from './generate.ts';
 import { init } from './init.ts';
 
@@ -9,7 +10,7 @@ await yargs(hideBin(process.argv))
   .command({
     command: 'generate',
     describe: 'Generate workflow files from codegen-gha.yaml',
-    handler: () => generate(),
+    handler: () => generate(loadConfig(process.cwd())),
   })
   .command({
     command: 'init',

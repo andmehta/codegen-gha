@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { CONFIG_FILENAME } from './config.ts';
+import { CONFIG_FILENAME, loadConfig } from './config.ts';
 import { generate } from './generate.ts';
 
 const DEFAULT_CONFIG = `include: "workflows/*.ts"
@@ -47,5 +47,5 @@ export async function init(cwd: string = process.cwd()): Promise<void> {
   fs.writeFileSync(examplePath, renderExampleWorkflow());
   console.log(`Wrote ${examplePath}`);
 
-  await generate(cwd);
+  await generate(loadConfig(cwd), cwd);
 }
