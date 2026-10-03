@@ -8,7 +8,7 @@ const project = new typescript.TypeScriptProject({
     projenCredentials: github.GithubCredentials.fromPersonalAccessToken({ secret: 'GITHUB_TOKEN' }),
     pullRequestLintOptions: {
       semanticTitleOptions: {
-        types: ['feat', 'fix', 'chore', 'docs'],
+        types: ['feat', 'fix', 'chore', 'docs', 'refactor'],
       },
     },
   },
