@@ -40,13 +40,6 @@ export async function init(cwd: string = process.cwd()): Promise<void> {
   const configPath = path.join(cwd, CONFIG_FILENAME);
   const examplePath = path.join(cwd, 'workflows', 'example.ts');
 
-  if (fs.existsSync(configPath)) {
-    throw new Error(`${CONFIG_FILENAME} already exists in ${cwd}`);
-  }
-  if (fs.existsSync(examplePath)) {
-    throw new Error(`${examplePath} already exists`);
-  }
-
   fs.writeFileSync(configPath, DEFAULT_CONFIG);
   console.log(`Wrote ${configPath}`);
 
