@@ -36,8 +36,7 @@ const project = new typescript.TypeScriptProject({
       module: 'NodeNext',
       moduleResolution: javascript.TypeScriptModuleResolution.NODE_NEXT,
       isolatedModules: true,
-      // Lets source files write relative imports with a literal `.ts` extension
-      // (e.g. `./common.ts`) instead of the emitted `.js` extension NodeNext otherwise requires.
+      // Allows literal `.ts` extensions in relative imports instead of NodeNext's required `.js`.
       allowImportingTsExtensions: true,
     },
   },
@@ -51,8 +50,7 @@ const project = new typescript.TypeScriptProject({
 
 project.package.addField('type', 'module');
 
-// eslint is already spawned onto testTask by this point (added during TypeScriptProject's
-// own constructor); prepend so tests still run before lint, matching the prior jest ordering.
+// Prepend so tests run before the eslint step TypeScriptProject already added.
 project.testTask.prependExec('vitest run --coverage');
 project.addTask('test:watch', {
   description: 'Run vitest in watch mode',
@@ -62,8 +60,7 @@ project.addTask('test:watch', {
 project.gitignore.exclude('/test-reports/');
 project.npmignore?.exclude('/coverage/', '/test-reports/', '/vitest.config.ts');
 
-// Not yet modeled in projen's TypeScriptCompilerOptions type: rewrites the literal `.ts`
-// extensions (allowed via allowImportingTsExtensions above) to `.js` in emitted output.
+// Rewrites the `.ts` extensions above to `.js` at emit; not yet in projen's typed options.
 project.tsconfig?.file.addOverride('compilerOptions.rewriteRelativeImportExtensions', true);
 
 project.synth();
