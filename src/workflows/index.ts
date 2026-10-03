@@ -1,4 +1,4 @@
-import { continuousIntegration } from './continuousIntegration';
-import { nonEcrDeploys } from './nonEcrDeploys';
+import { continuousIntegration } from './continuousIntegration.ts';
+import { nonEcrDeploys } from './nonEcrDeploys.ts';
 
 export const workflows = [continuousIntegration, nonEcrDeploys];

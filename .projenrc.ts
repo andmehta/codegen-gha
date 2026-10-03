@@ -28,13 +28,42 @@ const project = new typescript.TypeScriptProject({
     },
   },
   deps: ['tslib', 'yaml'], /* Runtime dependencies of this module. */
+  // This package is ESM-only: no CommonJS output, no `require()`.
+  tsconfig: {
+    compilerOptions: {
+      target: 'ES2022',
+      lib: ['ES2022'],
+      module: 'NodeNext',
+      moduleResolution: javascript.TypeScriptModuleResolution.NODE_NEXT,
+      isolatedModules: true,
+      // Lets source files write relative imports with a literal `.ts` extension
+      // (e.g. `./common.ts`) instead of the emitted `.js` extension NodeNext otherwise requires.
+      allowImportingTsExtensions: true,
+    },
+  },
+  // Vitest (not Jest) is used for tests; see the `test` task override and vitest.config.ts below.
+  jest: false,
+  devDeps: ['vitest', '@vitest/coverage-v8'],
   gitignore: ['.context/'],
   // description: undefined,        /* The description is just a string that helps people understand the purpose of the package. */
-  // devDeps: [],                   /* Build dependencies for this module. */
   // packageName: undefined,        /* The "name" in package.json. */
 });
 
-// add this script to package.json eventually
-// "codegen": "labuild run ./src/generate.ts"
-// run with `pnpm exec projen`
+project.package.addField('type', 'module');
+
+// eslint is already spawned onto testTask by this point (added during TypeScriptProject's
+// own constructor); prepend so tests still run before lint, matching the prior jest ordering.
+project.testTask.prependExec('vitest run --coverage');
+project.addTask('test:watch', {
+  description: 'Run vitest in watch mode',
+  exec: 'vitest',
+});
+
+project.gitignore.exclude('/test-reports/');
+project.npmignore?.exclude('/coverage/', '/test-reports/', '/vitest.config.ts');
+
+// Not yet modeled in projen's TypeScriptCompilerOptions type: rewrites the literal `.ts`
+// extensions (allowed via allowImportingTsExtensions above) to `.js` in emitted output.
+project.tsconfig?.file.addOverride('compilerOptions.rewriteRelativeImportExtensions', true);
+
 project.synth();

@@ -232,8 +232,7 @@
       "description": "Run tests",
       "steps": [
         {
-          "exec": "jest --passWithNoTests --updateSnapshot",
-          "receiveArgs": true
+          "exec": "vitest run --coverage"
         },
         {
           "spawn": "eslint"
@@ -242,10 +241,10 @@
     },
     "test:watch": {
       "name": "test:watch",
-      "description": "Run jest in watch mode",
+      "description": "Run vitest in watch mode",
       "steps": [
         {
-          "exec": "jest --watch"
+          "exec": "vitest"
         }
       ]
     },
@@ -283,7 +282,7 @@
             "--peer",
             "--no-deprecated",
             "--dep=dev,prod,peer,optional",
-            "--filter=@types/jest,eslint-import-resolver-typescript,eslint-plugin-import,jest,projen,ts-jest,ts-node,tslib,yaml"
+            "--filter=@vitest/coverage-v8,eslint-import-resolver-typescript,eslint-plugin-import,projen,ts-node,vitest,tslib,yaml"
           ]
         },
         {
@@ -294,21 +293,19 @@
             "pnpm",
             "update",
             "@stylistic/eslint-plugin",
-            "@types/jest",
             "@types/node",
             "@typescript-eslint/eslint-plugin",
             "@typescript-eslint/parser",
+            "@vitest/coverage-v8",
             "commit-and-tag-version",
             "constructs",
             "eslint-import-resolver-typescript",
             "eslint-plugin-import",
             "eslint",
-            "jest",
-            "jest-junit",
             "projen",
-            "ts-jest",
             "ts-node",
             "typescript",
+            "vitest",
             "tslib",
             "yaml"
           ]

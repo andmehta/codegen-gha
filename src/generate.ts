@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { workflows } from './workflows';
+import { workflows } from './workflows/index.ts';
 
-const OUTPUT_DIR = path.join(__dirname, '..', 'generated-workflows');
+const OUTPUT_DIR = path.join(import.meta.dirname, '..', 'generated-workflows');
 
 async function generate(): Promise<void> {
   console.log(`cleaning output dir ${OUTPUT_DIR}`);

@@ -1,9 +1,9 @@
-import { bash, ghaTemplateString } from '../components/bashString';
-import { IfConditionPlan } from '../components/common';
-import { NormalJob, RUNS_ON } from '../components/job';
-import { ActionStep, BashStep } from '../components/step';
-import { Workflow } from '../components/workflow';
-import { checkoutDepth2, workspaceCleanupStep, setupStep, installStep } from '../lib/steps/setup';
+import { bash, ghaTemplateString } from '../components/bashString.ts';
+import { IfConditionPlan } from '../components/common.ts';
+import { NormalJob, RUNS_ON } from '../components/job.ts';
+import { ActionStep, BashStep } from '../components/step.ts';
+import { Workflow } from '../components/workflow.ts';
+import { checkoutDepth2, workspaceCleanupStep, setupStep, installStep } from '../lib/steps/setup.ts';
 
 function makeMarsDeployJob({
   planKey,
