@@ -12,6 +12,7 @@ export interface CodegenGhaConfig {
 }
 
 const DEFAULTS = {
+  include: ['workflows/*.ts'],
   suffix: '.gen.yaml',
   outDir: '.',
   commentHeader: 'this file is generated using cgha generate {file}',
@@ -20,7 +21,8 @@ const DEFAULTS = {
 export function loadConfig(cwd: string): CodegenGhaConfig {
   const configPath = path.join(cwd, CONFIG_FILENAME);
   if (!fs.existsSync(configPath)) {
-    throw new Error(`Could not find ${CONFIG_FILENAME} in ${cwd}`);
+    console.warn(`Could not find ${CONFIG_FILENAME} in ${cwd}; using defaults (include: ${DEFAULTS.include.join(', ')})`);
+    return { ...DEFAULTS, include: [...DEFAULTS.include] };
   }
 
   const raw = YAML.parse(fs.readFileSync(configPath, 'utf8')) ?? {};
