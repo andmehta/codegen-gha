@@ -6,6 +6,11 @@ const project = new typescript.TypeScriptProject({
     // Use the default GITHUB_TOKEN instead of requiring a PROJEN_GITHUB_TOKEN PAT secret.
     // Note: pushes made with GITHUB_TOKEN don't re-trigger other workflows.
     projenCredentials: github.GithubCredentials.fromPersonalAccessToken({ secret: 'GITHUB_TOKEN' }),
+    pullRequestLintOptions: {
+      semanticTitleOptions: {
+        types: ['feat', 'fix', 'chore', 'docs'],
+      },
+    },
   },
   // Only emit the corepack `packageManager` field, not `devEngines.packageManager`.
   // pnpm warns and ignores `packageManager` when both are present.
