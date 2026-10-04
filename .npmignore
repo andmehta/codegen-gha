@@ -2,6 +2,8 @@
 /coverage/
 /test-reports/
 /vitest.config.ts
+/codegen-gha.yaml
+/pnpm-workspace.yaml
 /.projen/
 permissions-backup.acl
 /dist/changelog.md
