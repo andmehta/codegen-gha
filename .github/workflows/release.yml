@@ -106,7 +106,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: errout=$(mktemp); gh release create $(cat dist/releasetag.txt) -R $GITHUB_REPOSITORY -F dist/changelog.md -t $(cat dist/releasetag.txt) --target $GITHUB_SHA 2> $errout && true; exitcode=$?; if [ $exitcode -ne 0 ] && ! grep -q "Release.tag_name already exists" $errout; then cat $errout; exit $exitcode; fi
   release_npm:
-    name: Publish to npm
+    name: Stage on npm
     needs: release
     runs-on: ubuntu-latest
     permissions:
@@ -128,7 +128,7 @@ jobs:
         id: restore_build_artifact_permissions
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
-      - name: Release
+      - name: Stage
         id: release
         env:
           NPM_DIST_TAG: latest
@@ -136,4 +136,11 @@ jobs:
           NPM_CONFIG_PROVENANCE: "true"
           NPM_TRUSTED_PUBLISHER: "true"
           PUBLIB_DRYRUN: ${{ inputs.dry_run }}
-        run: npx -p publib@latest publib-npm
+        run: |-
+          for file in dist/js/*.tgz; do
+            if [ "${PUBLIB_DRYRUN:-}" = "true" ]; then
+              echo "Dry run: would stage $file"
+            else
+              npx -y npm@12 stage publish --tag "$NPM_DIST_TAG" --access public "$file"
+            fi
+          done

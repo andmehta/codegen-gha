@@ -100,4 +100,21 @@ project.postCompileTask.exec('cp src/cli/example-workflow.ts lib/cli/example-wor
 project.postCompileTask.exec('cp src/workflows/verify-generation.ts lib/workflows/verify-generation.ts');
 project.postCompileTask.exec('cp src/lib/index.ts lib/lib/index.ts');
 
+// Stage releases on npm instead of publishing them directly, so a version only goes live after a
+// maintainer approves it with 2FA (npmjs.com → Staged Packages, or `npm stage approve <id>`). The
+// trusted publisher is stage-only, without "npm publish" under Allowed actions. publib always runs
+// `npm publish`, so its step is swapped for `npm stage publish`, which needs npm 12+.
+const releaseWorkflow = project.github?.tryFindWorkflow('release');
+releaseWorkflow?.file?.addOverride('jobs.release_npm.name', 'Stage on npm');
+releaseWorkflow?.file?.addOverride('jobs.release_npm.steps.3.name', 'Stage');
+releaseWorkflow?.file?.addOverride('jobs.release_npm.steps.3.run', [
+  'for file in dist/js/*.tgz; do',
+  '  if [ "${PUBLIB_DRYRUN:-}" = "true" ]; then',
+  '    echo "Dry run: would stage $file"',
+  '  else',
+  '    npx -y npm@12 stage publish --tag "$NPM_DIST_TAG" --access public "$file"',
+  '  fi',
+  'done',
+].join('\n'));
+
 project.synth();
