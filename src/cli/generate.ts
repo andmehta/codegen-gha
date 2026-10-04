@@ -34,20 +34,26 @@ export async function generate(config: CodegenGhaConfig, cwd: string = process.c
     return;
   }
 
-  for (const absFile of files) {
-    const relFile = path.relative(cwd, absFile);
-    const moduleExports = await importWorkflowModule(absFile);
+  // first extract all the file paths and exports from the files in the passed in directory
+  const modules = await Promise.all(
+    files.map(async (absFile) => ({
+      relFile: path.relative(cwd, absFile),
+      exports: await importWorkflowModule(absFile),
+    })),
+  );
 
-    Object.values(moduleExports)
-      .filter(isWorkflow)
-      .forEach(workflow => {
-        const filename = `${slugify(workflow.getName())}${config.suffix}`;
-        const outPath = path.join(outDir, filename);
-        const header = `# ${config.commentHeader.replace('{file}', relFile)}\n`;
+  // ensure that the exports we try to generate are ACTUALLY a `Workflow`
+  const exportedWorkflows = modules.flatMap(({ relFile, exports }) =>
+    Object.values(exports).filter(isWorkflow).map((workflow) => ({ relFile, workflow })),
+  );
 
-        fs.writeFileSync(outPath, header + workflow.serialize());
-      });
-    }
+  for (const { relFile, workflow } of exportedWorkflows) {
+    const filename = `${slugify(workflow.getName())}${config.suffix}`;
+    const outPath = path.join(outDir, filename);
+    const header = config.commentHeader.replace('{file}', relFile);
+
+    fs.writeFileSync(outPath, workflow.serialize(header));
+  }
 
   console.log(`Finished writing to ${outDir}`);
 }

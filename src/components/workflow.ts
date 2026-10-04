@@ -72,7 +72,7 @@ export class Workflow {
     this.permissions = permissions;
   }
 
-  public serialize(): string {
+  public serialize(header?: string): string {
     const jobMap: Record<string, YAML.Document> = {};
     Object.entries(this.jobs).forEach(([jName, jDef]) => {
       jobMap[jName] = jDef.toYaml();
@@ -85,18 +85,19 @@ export class Workflow {
         env: this.env,
         jobs: jobMap,
       },
-      // TODO: i think i need to upgrade the lib to get this and put a generated comment
-      // {
-      //   commentBefore: '',
-      // },
     );
 
-    return doc.toString({
+    // if we pass a header, make sure its a proper comment
+    const commentHeader = header ? `# ${header}\n` : '';
+
+    const contents = commentHeader + doc.toString({
       lineWidth: 0,
       doubleQuotedMinMultiLineLength: 0,
       singleQuote: true,
       nullStr: '',
     });
+
+    return contents
   }
   public getName() {
     return this.name;
