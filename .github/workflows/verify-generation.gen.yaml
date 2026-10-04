@@ -77,7 +77,7 @@ jobs:
             ```diff
             ${{ steps.verify.outputs.diff }}
             ```
-      - name: Final check
+      - name: Fail Job if we did not generate everything
         if: ${{ steps.verify.outputs.diff != '' }}
         shell: bash
         run: |-
