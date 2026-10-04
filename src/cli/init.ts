@@ -8,7 +8,7 @@ const DEFAULT_CONFIG: CodegenGhaConfig = {
   include: ['workflows/*.ts'],
   outDir: '.github/workflows',
   suffix: '.gen.yaml',
-  commentHeader: 'this file is generated using cgha generate {file}',
+  commentHeader: 'DO NOT MODIFY. this file is generated using the `cgha generate` command\n generated from [{file}]',
 };
 
 const COMPONENT_IMPORT = /^import \{([^}]+)\} from '\.\.\/components\/\w+\.ts';$/;
