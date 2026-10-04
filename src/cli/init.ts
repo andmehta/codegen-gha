@@ -1,8 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import YAML from 'yaml';
-import { CodegenGhaConfig, CONFIG_FILENAME, loadConfig } from './config.ts';
-import { generate } from './generate.ts';
+import { CodegenGhaConfig, CONFIG_FILENAME } from './config.ts';
 
 const DEFAULT_CONFIG: CodegenGhaConfig = {
   include: ['workflows/*.ts'],
@@ -48,6 +47,4 @@ export async function init(cwd: string = process.cwd()): Promise<void> {
   fs.mkdirSync(path.dirname(examplePath), { recursive: true });
   fs.writeFileSync(examplePath, renderExampleWorkflow());
   console.log(`Wrote ${examplePath}`);
-
-  await generate(loadConfig(cwd), cwd);
 }

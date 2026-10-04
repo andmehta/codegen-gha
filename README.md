@@ -75,7 +75,7 @@ jobs:
 pnpm exec cgha init
 ```
 
-This sets up a new repo in one go: writes a default `codegen-gha.yaml`, adds a `workflows/example.ts` with a sample `Workflow`, and immediately runs `generate` so you end up with a working `.github/workflows/example.gen.yaml`. It always overwrites `codegen-gha.yaml` and `workflows/example.ts` if they already exist — run it in a repo with uncommitted changes you want to keep, and review the diff after.
+This sets up a new repo in one go: writes a default `codegen-gha.yaml`, adds a `workflows/example.ts` with a sample `Workflow`.
 
 ### Config reference
 
