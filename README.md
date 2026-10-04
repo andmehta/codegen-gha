@@ -2,6 +2,7 @@
 
 [![build](https://github.com/andmehta/codegen-gha/actions/workflows/build.yml/badge.svg)](https://github.com/andmehta/codegen-gha/actions/workflows/build.yml)
 [![release](https://github.com/andmehta/codegen-gha/actions/workflows/release.yml/badge.svg)](https://github.com/andmehta/codegen-gha/actions/workflows/release.yml)
+
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 `codegen-gha` is a TypeScript toolkit for defining GitHub Actions workflows as code and generating them into plain YAML. Instead of hand-writing and copy-pasting YAML across repos, you compose workflows, jobs, and steps using typed building blocks.
@@ -65,20 +66,42 @@ jobs:
           pnpm test
 ```
 
-To actually generate the workflow file, write the YAML out wherever your build tooling expects it, e.g. a `scripts/generate-workflows.ts` in your repo:
+## Generating workflow files
 
-```ts
-import fs from 'node:fs';
-import { ci } from './ci';
+`codegen-gha` ships a `cgha` CLI.
 
-fs.writeFileSync('.github/workflows/ci.yml', ci.serialize());
-```
-
-Then run it from the command line:
+### Quick start: `cgha init`
 
 ```sh
-pnpm exec ts-node scripts/generate-workflows.ts
+pnpm exec cgha init
 ```
+
+This sets up a new repo in one go: writes a default `codegen-gha.yaml`, adds a `workflows/example.ts` with a sample `Workflow`.
+
+### Config reference
+
+Add a `codegen-gha.yaml` to the root of your repo:
+
+```yaml
+# glob of files to scan for exported Workflow instances
+include: 
+  - "workflows/*.ts"
+# where to write generated files
+outDir: .github/workflows
+# filename suffix, marks the file as generated
+suffix: .gen.yaml
+# {file} is replaced with the source path
+commentHeader: "this file is generated using cgha generate {file}"
+```
+
+Then run:
+
+```sh
+pnpm exec cgha generate
+```
+
+This scans every file matching `include`, picks up any exported `Workflow` instance, and writes one file per workflow into `outDir` as `<slugified-name><suffix>` — e.g. the `ci.ts` example above becomes `.github/workflows/ci.gen.yaml`:
+
 
 ## Contributing
 

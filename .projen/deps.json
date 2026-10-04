@@ -11,6 +11,10 @@
       "type": "build"
     },
     {
+      "name": "@types/yargs",
+      "type": "build"
+    },
+    {
       "name": "@typescript-eslint/eslint-plugin",
       "version": "^8",
       "type": "build"
@@ -65,11 +69,24 @@
       "type": "build"
     },
     {
+      "name": "glob",
+      "version": "^13",
+      "type": "runtime"
+    },
+    {
       "name": "tslib",
       "type": "runtime"
     },
     {
+      "name": "tsx",
+      "type": "runtime"
+    },
+    {
       "name": "yaml",
+      "type": "runtime"
+    },
+    {
+      "name": "yargs",
       "type": "runtime"
     }
   ],
