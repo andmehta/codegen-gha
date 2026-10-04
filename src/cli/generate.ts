@@ -13,7 +13,7 @@ function isWorkflow(value: unknown): value is Workflow {
 function importWorkflowModule(absPath: string): Promise<Record<string, unknown>> {
   // Raw paths break import() (e.g. `#` is parsed as a URL fragment); encode as a file:// URL.
   const url = pathToFileURL(absPath).href;
-  if (absPath.endsWith('.ts') || absPath.endsWith('.tsx')) {
+  if (absPath.endsWith('.ts')) {
     return tsImport(url, import.meta.url);
   }
   return import(url);

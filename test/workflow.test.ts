@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bash } from '../src/components/bashString.ts';
-import { IfCondition } from '../src/components/common.ts';
+import { bash } from '../src/components/bash-string.ts';
 import { NormalJob, RUNS_ON } from '../src/components/job.ts';
 import { BashStep } from '../src/components/step.ts';
 import { Workflow } from '../src/components/workflow.ts';
@@ -10,13 +9,12 @@ describe('Workflow', () => {
     const workflow = new Workflow({
       name: 'CI',
       trigger: { pull_request: null },
-      permissions: { 'id-token': 'read', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
       env: {},
       jobs: {
         test: new NormalJob({
           name: 'test',
           needs: [],
-          condition: new IfCondition({ expression: 'true' }),
           runsOn: RUNS_ON.GITHUB_LATEST,
           timeoutMinutes: 10,
           env: {},

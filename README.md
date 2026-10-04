@@ -19,21 +19,19 @@ pnpm add -D codegen-gha
 
 ```ts
 import { Workflow } from 'codegen-gha/components/workflow';
-import { IfCondition } from 'codegen-gha/components/common';
 import { NormalJob, RUNS_ON } from 'codegen-gha/components/job';
 import { BashStep } from 'codegen-gha/components/step';
-import { bash } from 'codegen-gha/components/bashString';
+import { bash } from 'codegen-gha/components/bash-string';
 
 export const ci = new Workflow({
   name: 'CI',
   trigger: { pull_request: null },
-  permissions: { 'id-token': 'read', contents: 'read', 'pull-requests': 'read', actions: 'read', checks: 'read' },
+  permissions: { 'id-token': 'none', contents: 'read', 'pull-requests': 'read', actions: 'read', checks: 'read' },
   env: {},
   jobs: {
     test: new NormalJob({
       name: 'test',
       needs: [],
-      condition: new IfCondition({ expression: 'true' }),
       runsOn: RUNS_ON.GITHUB_LATEST,
       timeoutMinutes: 10,
       env: {},
@@ -51,18 +49,16 @@ name: CI
 on:
   pull_request:
 permissions:
-  id-token: read
+  id-token: none
   contents: read
   pull-requests: read
   actions: read
   checks: read
-env: {}
 jobs:
   test:
     name: test
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: ${{ true }}
     steps:
       - name: Run tests
         shell: bash
@@ -79,8 +75,6 @@ jobs:
 ```sh
 pnpm exec cgha init
 ```
-
-This sets up a new repo in one go: writes a default `codegen-gha.yaml`, adds a `workflows/example.ts` with a sample `Workflow`.
 
 ### Config reference
 
@@ -106,6 +100,9 @@ pnpm exec cgha generate
 
 This scans every file matching `include`, picks up any exported `Workflow` instance, and writes one file per workflow into `outDir` as `<slugified-name><suffix>` — e.g. the `ci.ts` example above becomes `.github/workflows/ci.gen.yaml`:
 
+#### `lib/`
+
+This is how best to organize repeated yaml. Things like standard actions can be defined here and imported into the workflows. 
 
 ## Contributing
 

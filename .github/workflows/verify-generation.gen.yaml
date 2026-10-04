@@ -1,0 +1,84 @@
+# DO NOT MODIFY. this file is generated using the `cgha generate` command
+# generated from [src/workflows/verify-generation.ts]
+name: Verify Generation
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+permissions:
+  id-token: none
+  contents: read
+  pull-requests: write
+  actions: read
+  checks: read
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.33.0
+      - name: Install dependencies
+        shell: bash
+        run: |-
+          pnpm install --frozen-lockfile
+      - name: Verify generated workflow files are up to date
+        id: verify
+        shell: bash
+        run: |
+          pnpm run generate
+
+          # Mark new files as intent-to-add so they show up in the diff against HEAD
+          git add --intent-to-add .
+          diff=$(git diff HEAD)
+
+          if [ -n "$diff" ]; then
+            {
+              echo "diff<<GENERATION_DIFF_EOF"
+              echo "$diff"
+              echo "GENERATION_DIFF_EOF"
+            } >> "$GITHUB_OUTPUT"
+            echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
+            exit 1
+          fi
+      - name: Post diff to job summary
+        if: ${{ steps.verify.outputs.diff != '' }}
+        env:
+          DIFF: ${{ steps.verify.outputs.diff }}
+        shell: bash
+        run: |
+          {
+            cat <<'EOF'
+          ## Generated workflow files are out of date
+
+          Run `pnpm run generate` and commit the result.
+
+          ```diff
+          EOF
+            echo "$DIFF"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Comment diff on PR
+        if: ${{ github.event_name == 'pull_request' && steps.verify.outputs.diff != '' }}
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |-
+            ## Generated workflow files are out of date
+
+            Run `pnpm run generate` and commit the result.
+
+            ```diff
+            ${{ steps.verify.outputs.diff }}
+            ```
+      - name: Fail Job if we did not generate everything
+        if: ${{ steps.verify.outputs.diff != '' }}
+        shell: bash
+        run: |-
+          exit 1

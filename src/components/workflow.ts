@@ -1,8 +1,15 @@
 import YAML from 'yaml';
 
-import { EnvConf, Input } from './common.ts';
+import { EnvConf, slugify, undefinedIfEmpty } from './common.ts';
 import { NormalJob } from './job.ts';
 
+export type InputType = 'string' | 'boolean' | 'number';
+
+export interface Input<T> {
+  type: InputType;
+  required: boolean;
+  default?: T;
+}
 interface WorkflowTriggerNarrowers {
   paths?: string[];
   branches?: string[];
@@ -40,7 +47,8 @@ export interface WorkflowConf {
 type ReadOrWrite = 'read' | 'write';
 
 interface Permissions {
-  'id-token': ReadOrWrite;
+  // OIDC tokens have no read-only mode, so GitHub only accepts 'write' or 'none' here
+  'id-token': 'write' | 'none';
   'contents': ReadOrWrite;
   'pull-requests': ReadOrWrite;
   'checks': ReadOrWrite;
@@ -82,13 +90,16 @@ export class Workflow {
         name: this.name,
         on: this.trigger,
         permissions: this.permissions,
-        env: this.env,
+        env: undefinedIfEmpty(this.env),
         jobs: jobMap,
       },
     );
 
     // if we pass a header, make sure its a proper comment
-    const commentHeader = header ? `# ${header}\n` : '';
+    // if someone uses \n in the string, we have to essentially recreate that here
+    const commentHeader = header
+      ? header.split('\n').map(line => `# ${line}`).join('\n') + '\n'
+      : '';
 
     const contents = commentHeader + doc.toString({
       lineWidth: 0,
@@ -104,6 +115,6 @@ export class Workflow {
    * @returns slugified name parameter
    */
   public getName() {
-    return this.name.toLowerCase().trim().replace(/\s+/g, '-');
+    return slugify(this.name);
   }
 }

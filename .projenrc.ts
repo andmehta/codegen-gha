@@ -72,12 +72,18 @@ project.addTask('test:watch', {
   description: 'Run vitest in watch mode',
   exec: 'vitest',
 });
+project.addTask('generate', {
+  description: "Regenerate this repo's own workflow files from src/workflows/ via tsx, no build required",
+  exec: 'tsx src/cli/index.ts generate',
+});
 
 // Rewrites the `.ts` extensions above to `.js` at emit; not yet in projen's typed options.
 project.tsconfig?.file.addOverride('compilerOptions.rewriteRelativeImportExtensions', true);
 
-// `cgha init` reads this real, type-checked source file at runtime and rewrites it into the
-// scaffolded example, rather than keeping a separate hand-typed copy that can drift from it.
+// `cgha init` reads these real, type-checked source files at runtime and rewrites them into the
+// scaffolded workflows, rather than keeping separate hand-typed copies that can drift from them.
 project.postCompileTask.exec('cp src/cli/example-workflow.ts lib/cli/example-workflow.ts');
+project.postCompileTask.exec('cp src/workflows/verify-generation.ts lib/workflows/verify-generation.ts');
+project.postCompileTask.exec('cp src/lib/index.ts lib/lib/index.ts');
 
 project.synth();
