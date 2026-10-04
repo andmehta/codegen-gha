@@ -99,7 +99,11 @@ export class Workflow {
 
     return contents;
   }
+  /**
+   * 
+   * @returns slugified name parameter
+   */
   public getName() {
-    return this.name;
+    return this.name.toLowerCase().trim().replace(/\s+/g, '-');
   }
 }

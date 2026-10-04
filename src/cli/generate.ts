@@ -10,10 +10,6 @@ function isWorkflow(value: unknown): value is Workflow {
   return typeof value === 'object' && value !== null && (value as Record<symbol, unknown>)[WORKFLOW_TAG] === true;
 }
 
-function slugify(name: string): string {
-  return name.toLowerCase().trim().replace(/\s+/g, '-');
-}
-
 function importWorkflowModule(absPath: string): Promise<Record<string, unknown>> {
   // Raw paths break import() (e.g. `#` is parsed as a URL fragment); encode as a file:// URL.
   const url = pathToFileURL(absPath).href;
@@ -48,7 +44,7 @@ export async function generate(config: CodegenGhaConfig, cwd: string = process.c
   );
 
   for (const { relFile, workflow } of exportedWorkflows) {
-    const filename = `${slugify(workflow.getName())}${config.suffix}`;
+    const filename = `${workflow.getName()}${config.suffix}`;
     const outPath = path.join(outDir, filename);
     const header = config.commentHeader.replace('{file}', relFile);
 
