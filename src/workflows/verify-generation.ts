@@ -60,7 +60,7 @@ export const verifyGeneration = new Workflow({
 {
   echo '## Generated workflow files are out of date'
   echo
-  echo 'Run \`pnpm run generate\` and commit the result.'
+  echo 'Run \`pnpm exec cgha generate\` and commit the result.'
   echo
   echo '\`\`\`diff'
   echo "$DIFF"
