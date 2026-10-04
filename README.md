@@ -128,6 +128,6 @@ PR titles are checked for a semantic type prefix (e.g. `feat: ...`, `fix: ...`, 
 
 ### Releases
 
-Releases are automated. Every merge to `main` runs [`release.yml`](.github/workflows/release.yml), which bumps the version from the conventional commit history, tags it, stages it on [npm](https://www.npmjs.com/package/codegen-gha) with provenance through npm trusted publishing (GitHub OIDC, so there are no npm tokens), and creates a GitHub Release with the changelog.
+Releases are automated. Every merge to `main` runs [`release.yml`](.github/workflows/release.yml), which bumps the version from the conventional commit history, tags it, and creates a GitHub Release with the changelog. Release only _stages_ on [npm](https://www.npmjs.com/package/codegen-gha).
 
-A staged version isn't installable until a maintainer approves it with 2FA, either on npmjs.com under **Staged Packages** or with `npm stage approve <id>`. CI can't put a release live on its own.
+A staged version isn't installable until a maintainer approves it. Please reach out if a release needs to be available.
