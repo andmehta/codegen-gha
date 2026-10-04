@@ -9,8 +9,6 @@
 
 This is especially valuable in large CI setups: it keeps jobs and workflows consistent across many repos, and lets you make CI-wide changes (bumping a runner type, adding a permission, tweaking a shared step) in one place instead of editing dozens of YAML files by hand.
 
-There's no barrel/root import — `codegen-gha` has no `main` entrypoint, only a wildcard `exports` map. Import each piece from the subpath matching its source file, e.g. `codegen-gha/components/workflow`, `codegen-gha/components/job`.
-
 ## Install
 
 ```sh
