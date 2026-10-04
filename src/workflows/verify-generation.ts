@@ -27,8 +27,6 @@ fi
 `,
 });
 
-// VERIFY_STEP exits 1 when the diff is non-empty, so the reporting steps need failure()
-// to run at all; a plain `if:` implicitly includes success()
 const HAS_DIFF = IfCondition.stepOutputNotNull(VERIFY_STEP, 'diff');
 const DIFF = ghaTemplateString(stepOutput(VERIFY_STEP, 'diff'));
 
