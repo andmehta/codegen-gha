@@ -21,7 +21,7 @@ export const ci = new Workflow({
         checkout,
         setupPnpm,
         new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile` }),
-        new BashStep({ name: 'Run tests', run: bash`pnpm exec vitest run` }),
+        new BashStep({ name: 'Run tests', run: bash`pnpm test` }),
       ],
     }),
   },
