@@ -74,7 +74,7 @@ project.addTask('test:watch', {
 });
 project.addTask('generate', {
   description: "Regenerate this repo's own workflow files from src/workflows/ via tsx, no build required",
-  exec: 'tsx src/generate.ts',
+  exec: 'tsx src/cli/index.ts generate',
 });
 
 // Rewrites the `.ts` extensions above to `.js` at emit; not yet in projen's typed options.

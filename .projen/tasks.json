@@ -157,7 +157,7 @@
       "description": "Regenerate this repo's own workflow files from src/workflows/ via tsx, no build required",
       "steps": [
         {
-          "exec": "tsx src/generate.ts"
+          "exec": "tsx src/cli/index.ts generate"
         }
       ]
     },
