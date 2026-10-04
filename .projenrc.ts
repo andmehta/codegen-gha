@@ -10,6 +10,9 @@ const project = new typescript.TypeScriptProject({
   releaseToNpm: true,
   npmTrustedPublishing: true,
   npmProvenance: true,
+  // The first public release jumps from the v0.0.x tags to 0.1.0. Once a v0.1.x tag exists this
+  // prints nothing, so later releases fall back to the normal commit-derived bump. Safe to delete then.
+  nextVersionCommand: '[ -n "$(git tag -l \'v0.1.*\')" ] || echo 0.1.0',
   packageManager: javascript.NodePackageManager.PNPM,
   githubOptions: {
     // Use the default GITHUB_TOKEN instead of requiring a PROJEN_GITHUB_TOKEN PAT secret.
