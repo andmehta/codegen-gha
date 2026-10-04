@@ -18,7 +18,11 @@ pnpm add -D codegen-gha
 ## Example
 
 ```ts
-import { Workflow, NormalJob, RUNS_ON, BashStep, bash, IfCondition } from 'codegen-gha';
+import { Workflow } from 'codegen-gha/components/workflow';
+import { IfCondition } from 'codegen-gha/components/common';
+import { NormalJob, RUNS_ON } from 'codegen-gha/components/job';
+import { BashStep } from 'codegen-gha/components/step';
+import { bash } from 'codegen-gha/components/bashString';
 
 export const ci = new Workflow({
   name: 'CI',

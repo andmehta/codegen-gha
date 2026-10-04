@@ -3,31 +3,30 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { CONFIG_FILENAME, DEFAULT_CONFIG } from './config.ts';
 
-const COMPONENT_IMPORT = /^import \{([^}]+)\} from '\.\.\/components\/\w+\.ts';$/;
+const COMPONENT_IMPORT = /^import \{([^}]+)\} from '\.\.\/components\/(\w+)\.ts';$/;
 
 /**
  * example-workflow.ts is a real, type-checked, tested source file (see
  * test/example-workflow.test.ts) rather than a hand-typed string, so it can't
- * silently drift from the actual library API. This collapses its internal
- * relative imports into the single public `codegen-gha` import a consumer
- * would actually write, and copies the rest of the file verbatim.
+ * silently drift from the actual library API. This rewrites its internal
+ * relative imports into the public `codegen-gha/components/*` subpaths a
+ * consumer would actually write, and copies the rest of the file verbatim.
  */
 function renderExampleWorkflow(): string {
   const sourcePath = path.join(import.meta.dirname, 'example-workflow.ts');
   const source = fs.readFileSync(sourcePath, 'utf8');
   const lines = source.split('\n');
 
-  const names: string[] = [];
-  const body = lines.filter(line => {
-    const match = line.match(COMPONENT_IMPORT);
-    if (!match) {
-      return true;
-    }
-    names.push(...match[1].split(',').map(name => name.trim()));
-    return false;
-  });
-
-  return [`import { ${names.join(', ')} } from 'codegen-gha';`, ...body].join('\n');
+  return lines
+    .map(line => {
+      const match = line.match(COMPONENT_IMPORT);
+      if (!match) {
+        return line;
+      }
+      const [, names, component] = match;
+      return `import {${names}} from 'codegen-gha/components/${component}';`;
+    })
+    .join('\n');
 }
 
 export async function init(cwd: string = process.cwd()): Promise<void> {

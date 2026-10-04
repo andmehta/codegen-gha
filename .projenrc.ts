@@ -31,6 +31,9 @@ const project = new typescript.TypeScriptProject({
   bin: {
     cgha: 'lib/cli/index.js',
   },
+  // No barrel file: consumers import subpaths directly (e.g. `codegen-gha/components/workflow`),
+  // resolved by the wildcard "exports" map below instead of a root `main`/`types` entrypoint.
+  entrypoint: '',
   // This package is ESM-only: no CommonJS output, no `require()`.
   tsconfig: {
     compilerOptions: {
@@ -55,6 +58,13 @@ const project = new typescript.TypeScriptProject({
 });
 
 project.package.addField('type', 'module');
+project.package.addField('exports', {
+  './package.json': './package.json',
+  './*': {
+    types: './lib/*.d.ts',
+    default: './lib/*.js',
+  },
+});
 
 // Prepend so tests run before the eslint step TypeScriptProject already added.
 project.testTask.prependExec('vitest run --coverage');

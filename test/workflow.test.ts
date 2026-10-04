@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { BashStep, IfCondition, NormalJob, RUNS_ON, Workflow, bash } from '../src/index.ts';
+import { bash } from '../src/components/bashString.ts';
+import { IfCondition } from '../src/components/common.ts';
+import { NormalJob, RUNS_ON } from '../src/components/job.ts';
+import { BashStep } from '../src/components/step.ts';
+import { Workflow } from '../src/components/workflow.ts';
 
 describe('Workflow', () => {
   it('serializes to yaml', () => {
