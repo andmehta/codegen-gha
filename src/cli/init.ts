@@ -1,13 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { CONFIG_FILENAME, loadConfig } from './config.ts';
+import YAML from 'yaml';
+import { CodegenGhaConfig, CONFIG_FILENAME, loadConfig } from './config.ts';
 import { generate } from './generate.ts';
 
-const DEFAULT_CONFIG = `include: "workflows/*.ts"
-outDir: .github/workflows
-suffix: .gen.yaml
-commentHeader: "this file is generated using cgha generate {file}"
-`;
+const DEFAULT_CONFIG: CodegenGhaConfig = {
+  include: ['workflows/*.ts'],
+  outDir: '.github/workflows',
+  suffix: '.gen.yaml',
+  commentHeader: 'this file is generated using cgha generate {file}',
+};
 
 const COMPONENT_IMPORT = /^import \{([^}]+)\} from '\.\.\/components\/\w+\.ts';$/;
 
@@ -40,7 +42,7 @@ export async function init(cwd: string = process.cwd()): Promise<void> {
   const configPath = path.join(cwd, CONFIG_FILENAME);
   const examplePath = path.join(cwd, 'workflows', 'example.ts');
 
-  fs.writeFileSync(configPath, DEFAULT_CONFIG);
+  fs.writeFileSync(configPath, YAML.stringify(DEFAULT_CONFIG));
   console.log(`Wrote ${configPath}`);
 
   fs.mkdirSync(path.dirname(examplePath), { recursive: true });
