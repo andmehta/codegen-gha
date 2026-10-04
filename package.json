@@ -1,5 +1,10 @@
 {
   "name": "codegen-gha",
+  "description": "Define GitHub Actions workflows in TypeScript and generate them into plain YAML",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andmehta/codegen-gha.git"
+  },
   "bin": {
     "cgha": "lib/cli/index.js"
   },
@@ -24,6 +29,10 @@
     "upgrade": "projen upgrade",
     "watch": "projen watch",
     "projen": "projen"
+  },
+  "author": {
+    "name": "Andrew Mehta",
+    "organization": false
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2",
@@ -50,6 +59,19 @@
     "yargs": "^17.7.3"
   },
   "pnpm": {},
+  "keywords": [
+    "ci",
+    "cli",
+    "codegen",
+    "github",
+    "github-actions",
+    "typescript",
+    "workflow",
+    "yaml"
+  ],
+  "engines": {
+    "node": ">=20.11.0"
+  },
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"

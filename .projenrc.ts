@@ -1,6 +1,15 @@
 import { github, javascript, typescript } from 'projen';
 const project = new typescript.TypeScriptProject({
   name: 'codegen-gha',
+  description: 'Define GitHub Actions workflows in TypeScript and generate them into plain YAML',
+  repository: 'https://github.com/andmehta/codegen-gha.git',
+  authorName: 'Andrew Mehta',
+  keywords: ['github-actions', 'github', 'workflow', 'ci', 'codegen', 'yaml', 'typescript', 'cli'],
+  // Publish via GitHub OIDC trusted publishing, so no NPM_TOKEN secret is needed. The trusted
+  // publisher must be configured on npmjs.com for this repo and the release.yml workflow.
+  releaseToNpm: true,
+  npmTrustedPublishing: true,
+  npmProvenance: true,
   packageManager: javascript.NodePackageManager.PNPM,
   githubOptions: {
     // Use the default GITHUB_TOKEN instead of requiring a PROJEN_GITHUB_TOKEN PAT secret.
@@ -51,13 +60,15 @@ const project = new typescript.TypeScriptProject({
   devDeps: ['vitest', '@vitest/coverage-v8', '@types/yargs'],
   gitignore: ['.context/', '/test-reports/'],
   npmIgnoreOptions: {
-    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts'],
+    // This repo's own generator config, not something consumers need
+    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts', '/codegen-gha.yaml', '/pnpm-workspace.yaml'],
   },
-  // description: undefined,        /* The description is just a string that helps people understand the purpose of the package. */
-  // packageName: undefined,        /* The "name" in package.json. */
 });
 
 project.package.addField('type', 'module');
+// Set directly rather than via `minNodeVersion`, which would also pin every CI job to this exact
+// version (trusted publishing needs a much newer npm). 20.11 is the first with `import.meta.dirname`.
+project.package.addEngine('node', '>=20.11.0');
 project.package.addField('exports', {
   './package.json': './package.json',
   './*': {

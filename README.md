@@ -2,7 +2,7 @@
 
 [![build](https://github.com/andmehta/codegen-gha/actions/workflows/build.yml/badge.svg)](https://github.com/andmehta/codegen-gha/actions/workflows/build.yml)
 [![release](https://github.com/andmehta/codegen-gha/actions/workflows/release.yml/badge.svg)](https://github.com/andmehta/codegen-gha/actions/workflows/release.yml)
-
+[![npm](https://img.shields.io/npm/v/codegen-gha.svg)](https://www.npmjs.com/package/codegen-gha)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 `codegen-gha` is a TypeScript toolkit for defining GitHub Actions workflows as code and generating them into plain YAML. Instead of hand-writing and copy-pasting YAML across repos, you compose workflows, jobs, and steps using typed building blocks.
@@ -13,7 +13,16 @@ This is especially valuable in large CI setups: it keeps jobs and workflows cons
 
 ```sh
 pnpm add -D codegen-gha
+# or
+npm install --save-dev codegen-gha
+# or
+yarn add -D codegen-gha
 ```
+
+Requires Node.js 20.11 or later. The package is ESM-only, so import it with `import`, not `require()`.
+
+> [!NOTE]
+> `codegen-gha` is pre-1.0. Breaking changes can land in any minor release, so consider pinning the version.
 
 ## Example
 
@@ -73,8 +82,17 @@ jobs:
 ### Quick start: `cgha init`
 
 ```sh
-pnpm exec cgha init
+pnpm exec cgha init   # or: npx cgha init
 ```
+
+This scaffolds a working setup in the current directory:
+
+- `codegen-gha.yaml`: the generator config (see below)
+- `workflows/example.ts`: an example workflow to edit or replace
+- `workflows/verify-generation.ts`: a CI workflow that fails if the generated YAML is out of date with its TypeScript source
+- `lib/index.ts`: a place for shared steps and jobs (see [`lib/`](#lib))
+
+Then run `pnpm exec cgha generate` to write the YAML into `.github/workflows/`.
 
 ### Config reference
 
@@ -95,15 +113,19 @@ commentHeader: "this file is generated using cgha generate {file}"
 Then run:
 
 ```sh
-pnpm exec cgha generate
+pnpm exec cgha generate   # or: npx cgha generate
 ```
 
-This scans every file matching `include`, picks up any exported `Workflow` instance, and writes one file per workflow into `outDir` as `<slugified-name><suffix>` — e.g. the `ci.ts` example above becomes `.github/workflows/ci.gen.yaml`:
+This scans every file matching `include`, picks up any exported `Workflow` instance, and writes one file per workflow into `outDir` as `<slugified-name><suffix>` — e.g. the `ci.ts` example above becomes `.github/workflows/ci.gen.yaml`. Commit the generated files: GitHub only runs the YAML, not the TypeScript.
 
 #### `lib/`
 
-This is how best to organize repeated yaml. Things like standard actions can be defined here and imported into the workflows. 
+This is how best to organize repeated YAML. Things like standard actions can be defined here and imported into the workflows.
 
 ## Contributing
 
 PR titles are checked for a semantic type prefix (e.g. `feat: ...`, `fix: ...`, `chore: ...`, `docs: ...`); pick whichever matches the change.
+
+### Releases
+
+Releases are automated. Every merge to `main` runs [`release.yml`](.github/workflows/release.yml), which bumps the version from the conventional commit history, tags it, publishes to [npm](https://www.npmjs.com/package/codegen-gha) with provenance through npm trusted publishing (GitHub OIDC, so there are no npm tokens), and creates a GitHub Release with the changelog.
