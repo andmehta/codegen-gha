@@ -97,7 +97,7 @@ export class Workflow {
       nullStr: '',
     });
 
-    return contents
+    return contents;
   }
   public getName() {
     return this.name;
