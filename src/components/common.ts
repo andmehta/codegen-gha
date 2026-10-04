@@ -1,6 +1,17 @@
 export type EnvConf = Record<string, string>;
 
 /**
+ * Lowercases and collapses every run of characters other than letters, digits, `_` and `-` into
+ * a single hyphen, e.g. `Verify Generation (PR)` -> `verify-generation-pr`
+ */
+export function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
  * Util for getting undefined if an object or array is empty
  * to avoid having extra noise in the generated yaml
  */

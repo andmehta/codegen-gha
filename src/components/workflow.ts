@@ -1,6 +1,6 @@
 import YAML from 'yaml';
 
-import { EnvConf, undefinedIfEmpty } from './common.ts';
+import { EnvConf, slugify, undefinedIfEmpty } from './common.ts';
 import { NormalJob } from './job.ts';
 
 export type InputType = 'string' | 'boolean' | 'number';
@@ -115,6 +115,6 @@ export class Workflow {
    * @returns slugified name parameter
    */
   public getName() {
-    return this.name.toLowerCase().trim().replace(/\s+/g, '-');
+    return slugify(this.name);
   }
 }

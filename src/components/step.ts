@@ -1,9 +1,22 @@
 import YAML from 'yaml';
 
 import { BashString } from './bash-string.ts';
-import { undefinedIfEmpty } from './common.ts';
+import { slugify, undefinedIfEmpty } from './common.ts';
 import type { IfCondition } from './if-condition.ts';
 import { WorkflowComponent } from './workflow-component.ts';
+
+// GitHub requires a step id to start with a letter or `_` and contain only alphanumerics, `-` and `_`
+const VALID_STEP_ID = /^[a-z_][a-z0-9_-]*$/;
+
+/** @internal exported for tests */
+export function toStepId(id: string | undefined): string | undefined {
+  if (id === undefined) return undefined;
+  const slug = slugify(id);
+  if (!VALID_STEP_ID.test(slug)) {
+    throw new Error(`Step id '${id}' slugifies to '${slug}', which isn't a valid id: it must start with a letter or _`);
+  }
+  return slug;
+}
 
 export interface BashStepConf {
   name: string;
@@ -23,7 +36,7 @@ export class BashStep extends WorkflowComponent {
     const { name, run, id, condition, env } = conf;
     this.name = name;
     this.run = run;
-    this.id = id;
+    this.id = toStepId(id);
     this.condition = condition;
     this.env = env;
   }
@@ -74,7 +87,7 @@ export class ActionStep extends WorkflowComponent {
     this.actionSpecifier = actionSpecifier;
     this.params = params;
     this.env = env;
-    this.id = id;
+    this.id = toStepId(id);
     this.condition = condition;
   }
   public toYaml(): YAML.Document {
