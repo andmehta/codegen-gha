@@ -1,8 +1,9 @@
 import { ActionStep } from '../components/step.ts';
 
 /**
- * Example reusable building blocks for workflows. Add more presets here as
- * this repo's own workflows need them.
+ * Building blocks shared across workflows. When a step, job or condition shows up in more than
+ * one workflow, define it once here and import it, so a change like bumping an action version
+ * happens in one place. Nothing here is generated on its own; only exported Workflows are.
  */
 
 export const checkout = new ActionStep({

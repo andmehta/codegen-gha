@@ -80,7 +80,38 @@ jobs:
 pnpm exec cgha init
 ```
 
-This sets up a new repo in one go: writes a default `codegen-gha.yaml`, adds a `workflows/example.ts` with a sample `Workflow`.
+This sets up a new repo in one go. 
+First it writes a default `codegen-gha.yaml`. Then it writes a default workflows directory `workflows/` with two files, a `verify-generation.ts` to provide CI support for a code generation workflow and `example.ts` with a sample `Workflow`.
+Finally it writes a `lib/index.ts` with a few shared steps (`checkout`, `setupPnpm`) that those workflows import.
+
+### Sharing steps with `lib/`
+
+Keep each file in `workflows/` focused on a single `Workflow`. When a step, job or condition is
+used by more than one workflow, define it once in `lib/` and import it:
+
+```ts
+// lib/index.ts
+import { ActionStep } from 'codegen-gha/components/step';
+
+export const checkout = new ActionStep({
+  name: 'Checkout',
+  actionSpecifier: 'actions/checkout@v6',
+  params: {},
+});
+```
+
+```ts
+// workflows/ci.ts
+import { checkout } from '../lib/index.ts';
+// ...
+steps: [checkout, /* ... */],
+```
+
+That way a change like bumping an action version or a pinned tool version happens in one place,
+and every workflow that uses it picks it up the next time you run `cgha generate`.
+
+`lib/` isn't matched by the default `include` glob, so nothing in it is generated on its own.
+Only exported `Workflow` instances in `workflows/` become files in `.github/workflows`.
 
 ### Config reference
 

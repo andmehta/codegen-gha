@@ -206,6 +206,12 @@
       "steps": [
         {
           "exec": "cp src/cli/example-workflow.ts lib/cli/example-workflow.ts"
+        },
+        {
+          "exec": "cp src/workflows/verify-generation.ts lib/workflows/verify-generation.ts"
+        },
+        {
+          "exec": "cp src/lib/index.ts lib/lib/index.ts"
         }
       ]
     },
