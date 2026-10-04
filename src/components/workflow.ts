@@ -100,7 +100,7 @@ export class Workflow {
     return contents;
   }
   /**
-   * 
+   *
    * @returns slugified name parameter
    */
   public getName() {
