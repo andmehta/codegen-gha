@@ -71,7 +71,7 @@ export const verifyGeneration = new Workflow({
         new ActionStep({
           name: 'Comment diff on PR',
           // push events to main have no PR to comment on
-          condition: HAS_DIFF.and(IfCondition.isPullRequest()),
+          condition: IfCondition.isPullRequest().and(HAS_DIFF),
           actionSpecifier: 'peter-evans/create-or-update-comment@v5',
           params: {
             'issue-number': ghaTemplateString('github.event.pull_request.number'),

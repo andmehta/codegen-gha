@@ -65,7 +65,7 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Comment diff on PR
-        if: ${{ steps.verify.outputs.diff != '' && github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' && steps.verify.outputs.diff != '' }}
         uses: peter-evans/create-or-update-comment@v5
         with:
           issue-number: ${{ github.event.pull_request.number }}
