@@ -86,7 +86,7 @@ EOF
           },
         }),
         new BashStep({
-          name: 'Final check',
+          name: 'Fail Job if we did not generate everything',
           condition: HAS_DIFF,
           run: bash`exit 1`,
         }),
