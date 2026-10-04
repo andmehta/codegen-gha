@@ -60,7 +60,7 @@ export const verifyGeneration = new Workflow({
   cat <<'EOF'
 ## Generated workflow files are out of date
 
-Run \`pnpm exec cgha generate\` and commit the result.
+Run \`pnpm run generate\` and commit the result.
 
 \`\`\`diff
 EOF
