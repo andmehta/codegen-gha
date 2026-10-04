@@ -9,7 +9,7 @@ on:
 permissions:
   id-token: none
   contents: read
-  pull-requests: read
+  pull-requests: write
   actions: read
   checks: read
 env: {}
@@ -31,13 +31,54 @@ jobs:
         run: |-
           pnpm install --frozen-lockfile
       - name: Verify generated workflow files are up to date
+        id: verify
         shell: bash
         run: |
           pnpm run generate
 
-          git add src/generated-workflows
-          if ! git diff --staged --quiet -- src/generated-workflows; then
+          # Mark new files as intent-to-add so they show up in the diff against HEAD
+          git add --intent-to-add .
+          diff=$(git diff HEAD)
+
+          if [ -n "$diff" ]; then
+            {
+              echo "diff<<GENERATION_DIFF_EOF"
+              echo "$diff"
+              echo "GENERATION_DIFF_EOF"
+            } >> "$GITHUB_OUTPUT"
             echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
-            git diff --staged -- src/generated-workflows
             exit 1
           fi
+      - name: Post diff to job summary
+        if: ${{ steps.verify.outputs.diff != '' }}
+        env:
+          DIFF: ${{ steps.verify.outputs.diff }}
+        shell: bash
+        run: |
+          {
+            echo '## Generated workflow files are out of date'
+            echo
+            echo 'Run `pnpm run generate` and commit the result.'
+            echo
+            echo '```diff'
+            echo "$DIFF"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Comment diff on PR
+        if: ${{ steps.verify.outputs.diff != '' && github.event_name == 'pull_request' }}
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |-
+            ## Generated workflow files are out of date
+
+            Run `pnpm run generate` and commit the result.
+
+            ```diff
+            ${{ steps.verify.outputs.diff }}
+            ```
+      - name: Final check
+        if: ${{ steps.verify.outputs.diff != '' }}
+        shell: bash
+        run: |-
+          exit 1

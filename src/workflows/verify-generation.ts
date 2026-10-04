@@ -1,14 +1,42 @@
-import { bash } from '../components/bashString.ts';
-import { IfCondition } from '../components/common.ts';
+import { bash, ghaTemplateString } from '../components/bash-string.ts';
+import { IfCondition } from '../components/if-condition.ts';
 import { NormalJob, RUNS_ON } from '../components/job.ts';
-import { BashStep } from '../components/step.ts';
+import { ActionStep, BashStep, stepOutput } from '../components/step.ts';
 import { Workflow } from '../components/workflow.ts';
 import { checkout, setupPnpm } from '../lib/index.ts';
+
+const VERIFY_STEP = new BashStep({
+  name: 'Verify generated workflow files are up to date',
+  id: 'verify',
+  run: bash`
+pnpm run generate
+
+# Mark new files as intent-to-add so they show up in the diff against HEAD
+git add --intent-to-add .
+diff=$(git diff HEAD)
+
+if [ -n "$diff" ]; then
+  {
+    echo "diff<<GENERATION_DIFF_EOF"
+    echo "$diff"
+    echo "GENERATION_DIFF_EOF"
+  } >> "$GITHUB_OUTPUT"
+  echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
+  exit 1
+fi
+`,
+});
+
+// VERIFY_STEP exits 1 when the diff is non-empty, so the reporting steps need failure()
+// to run at all; a plain `if:` implicitly includes success()
+const HAS_DIFF = IfCondition.stepOutputNotNull(VERIFY_STEP, 'diff');
+const DIFF = ghaTemplateString(stepOutput(VERIFY_STEP, 'diff'));
+
 
 export const verifyGeneration = new Workflow({
   name: 'Verify Generation',
   trigger: { pull_request: null, push: { branches: ['main'] } },
-  permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+  permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'write', 'actions': 'read', 'checks': 'read' },
   env: {},
   jobs: {
     verify: new NormalJob({
@@ -23,18 +51,45 @@ export const verifyGeneration = new Workflow({
         checkout,
         setupPnpm,
         new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile` }),
+        VERIFY_STEP,
         new BashStep({
-          name: 'Verify generated workflow files are up to date',
+          name: 'Post diff to job summary',
+          condition: HAS_DIFF,
+          env: { DIFF },
           run: bash`
-pnpm run generate
-
-git add src/generated-workflows
-if ! git diff --staged --quiet -- src/generated-workflows; then
-  echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
-  git diff --staged -- src/generated-workflows
-  exit 1
-fi
+{
+  echo '## Generated workflow files are out of date'
+  echo
+  echo 'Run \`pnpm run generate\` and commit the result.'
+  echo
+  echo '\`\`\`diff'
+  echo "$DIFF"
+  echo '\`\`\`'
+} >> "$GITHUB_STEP_SUMMARY"
 `,
+        }),
+        new ActionStep({
+          name: 'Comment diff on PR',
+          // push events to main have no PR to comment on
+          condition: HAS_DIFF.and(IfCondition.isPullRequest()),
+          actionSpecifier: 'peter-evans/create-or-update-comment@v5',
+          params: {
+            'issue-number': ghaTemplateString('github.event.pull_request.number'),
+            'body': [
+              '## Generated workflow files are out of date',
+              '',
+              'Run `pnpm run generate` and commit the result.',
+              '',
+              '```diff',
+              DIFF,
+              '```',
+            ].join('\n'),
+          },
+        }),
+        new BashStep({
+          name: 'Final check',
+          condition: HAS_DIFF,
+          run: bash`exit 1`,
         }),
       ],
     }),

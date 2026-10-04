@@ -1,8 +1,10 @@
 import YAML from 'yaml';
 
-import { WorkflowComponent, IfCondition, undefinedIfEmpty } from './common.ts';
+import { undefinedIfEmpty } from './common.ts';
+import { IfCondition } from './if-condition.ts';
 import { Service } from './service.ts';
 import { StepUnion } from './step.ts';
+import { WorkflowComponent } from './workflow-component.ts';
 
 const RUNS_ON_SPECIFIERS = [
   'ubuntu-latest',

@@ -1,6 +1,7 @@
 import YAML from 'yaml';
 
-import { WorkflowComponent, EnvConf } from './common.ts';
+import { EnvConf } from './common.ts';
+import { WorkflowComponent } from './workflow-component.ts';
 
 export interface ServiceConf {
   image: string;

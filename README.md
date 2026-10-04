@@ -22,7 +22,7 @@ import { Workflow } from 'codegen-gha/components/workflow';
 import { IfCondition } from 'codegen-gha/components/common';
 import { NormalJob, RUNS_ON } from 'codegen-gha/components/job';
 import { BashStep } from 'codegen-gha/components/step';
-import { bash } from 'codegen-gha/components/bashString';
+import { bash } from 'codegen-gha/components/bash-string';
 
 export const ci = new Workflow({
   name: 'CI',

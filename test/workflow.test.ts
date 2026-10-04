@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { bash } from '../src/components/bashString.ts';
-import { IfCondition } from '../src/components/common.ts';
+import { bash } from '../src/components/bash-string.ts';
+import { IfCondition } from '../src/components/if-condition.ts';
 import { NormalJob, RUNS_ON } from '../src/components/job.ts';
 import { BashStep } from '../src/components/step.ts';
 import { Workflow } from '../src/components/workflow.ts';

@@ -1,5 +1,5 @@
-import { bash } from '../components/bashString.ts';
-import { IfCondition } from '../components/common.ts';
+import { bash } from '../components/bash-string.ts';
+import { IfCondition } from '../components/if-condition.ts';
 import { NormalJob, RUNS_ON } from '../components/job.ts';
 import { BashStep } from '../components/step.ts';
 import { Workflow } from '../components/workflow.ts';

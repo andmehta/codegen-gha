@@ -3,7 +3,7 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { CONFIG_FILENAME, DEFAULT_CONFIG } from './config.ts';
 
-const COMPONENT_IMPORT = /^import \{([^}]+)\} from '\.\.\/components\/(\w+)\.ts';$/;
+const COMPONENT_IMPORT = /^import \{([^}]+)\} from '\.\.\/components\/([\w-]+)\.ts';$/;
 
 /**
  * example-workflow.ts is a real, type-checked, tested source file (see

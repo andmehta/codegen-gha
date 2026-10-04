@@ -1,8 +1,15 @@
 import YAML from 'yaml';
 
-import { EnvConf, Input } from './common.ts';
+import { EnvConf } from './common.ts';
 import { NormalJob } from './job.ts';
 
+export type InputType = 'string' | 'boolean' | 'number';
+
+export interface Input<T> {
+  type: InputType;
+  required: boolean;
+  default?: T;
+}
 interface WorkflowTriggerNarrowers {
   paths?: string[];
   branches?: string[];
