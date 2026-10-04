@@ -26,11 +26,11 @@ export const verifyGeneration = new Workflow({
         new BashStep({
           name: 'Verify generated workflow files are up to date',
           run: bash`
-pnpm exec tsx src/generate.ts
+pnpm run generate
 
 git add src/generated-workflows
 if ! git diff --staged --quiet -- src/generated-workflows; then
-  echo "::error::Generated workflow files are out of date. Run 'pnpm exec tsx src/generate.ts' and commit the result."
+  echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
   git diff --staged -- src/generated-workflows
   exit 1
 fi

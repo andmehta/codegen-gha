@@ -72,6 +72,10 @@ project.addTask('test:watch', {
   description: 'Run vitest in watch mode',
   exec: 'vitest',
 });
+project.addTask('generate', {
+  description: "Regenerate this repo's own workflow files from src/workflows/ via tsx, no build required",
+  exec: 'tsx src/generate.ts',
+});
 
 // Rewrites the `.ts` extensions above to `.js` at emit; not yet in projen's typed options.
 project.tsconfig?.file.addOverride('compilerOptions.rewriteRelativeImportExtensions', true);

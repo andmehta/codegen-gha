@@ -152,6 +152,15 @@
         }
       ]
     },
+    "generate": {
+      "name": "generate",
+      "description": "Regenerate this repo's own workflow files from src/workflows/ via tsx, no build required",
+      "steps": [
+        {
+          "exec": "tsx src/generate.ts"
+        }
+      ]
+    },
     "install": {
       "name": "install",
       "description": "Install project dependencies and update lockfile (non-frozen)",
