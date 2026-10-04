@@ -45,8 +45,9 @@ export async function generate(config: CodegenGhaConfig, cwd: string = process.c
         const outPath = path.join(outDir, filename);
         const header = `# ${config.commentHeader.replace('{file}', relFile)}\n`;
 
-        console.log(`Writing ${workflow.getName()} to ${outPath}`);
         fs.writeFileSync(outPath, header + workflow.serialize());
       });
-  }
+    }
+
+  console.log(`Finished writing to ${outDir}`);
 }
