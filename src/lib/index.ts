@@ -8,7 +8,7 @@ import { ActionStep } from '../components/step.ts';
 
 export const checkout = new ActionStep({
   name: 'Checkout',
-  actionSpecifier: 'actions/checkout@v6',
+  actionSpecifier: 'actions/checkout@v7',
   params: {},
 });
 
