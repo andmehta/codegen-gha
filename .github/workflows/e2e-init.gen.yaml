@@ -1,0 +1,97 @@
+# DO NOT MODIFY. this file is generated using the `cgha generate` command
+# generated from [src/workflows/e2e-init.ts]
+name: E2E Init
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+permissions:
+  id-token: none
+  contents: read
+  pull-requests: read
+  actions: read
+  checks: read
+env: {}
+jobs:
+  init:
+    name: init
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ true }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.33.0
+      - name: Install dependencies
+        shell: bash
+        run: |-
+          pnpm install --frozen-lockfile
+      - name: Pack codegen-gha
+        id: pack
+        shell: bash
+        run: |
+          pnpm compile
+          pnpm post-compile
+          pnpm package
+          echo "tarball=$(ls "$PWD"/dist/js/codegen-gha-*.tgz)" >> "$GITHUB_OUTPUT"
+      - name: Install the tarball into an empty project
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/consumer"
+          cd "$RUNNER_TEMP/consumer"
+          pnpm init
+          pnpm add "$TARBALL"
+      - name: cgha init writes the starter files
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/consumer"
+          pnpm exec cgha init
+
+          for f in codegen-gha.yaml workflows/example.ts workflows/verify-generation.ts lib/index.ts; do
+            if [ ! -f "$f" ]; then
+              echo "::error::cgha init did not write $f"
+              exit 1
+            fi
+          done
+      - name: cgha generate writes workflows from them
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/consumer"
+          pnpm exec cgha generate
+
+          for f in .github/workflows/example.gen.yaml .github/workflows/verify-generation.gen.yaml; do
+            if [ ! -f "$f" ]; then
+              echo "::error::cgha generate did not write $f"
+              exit 1
+            fi
+          done
+      - name: Generated workflows pass actionlint
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/consumer"
+          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint   -ignore 'should not be empty'   -ignore 'constant expression'   -ignore 'SC2016'   .github/workflows/*.gen.yaml
+      - name: Regenerating is a no-op
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/consumer"
+          echo node_modules > .gitignore
+          rm -f actionlint
+          git init --quiet
+          git add -A
+          git -c user.name=e2e -c user.email=e2e@example.com commit --quiet -m 'cgha init'
+
+          pnpm exec cgha generate
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::A second cgha generate changed files it had already generated"
+            git status --porcelain
+            git diff
+            exit 1
+          fi
