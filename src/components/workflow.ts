@@ -1,6 +1,6 @@
 import YAML from 'yaml';
 
-import { EnvConf } from './common.ts';
+import { EnvConf, undefinedIfEmpty } from './common.ts';
 import { NormalJob } from './job.ts';
 
 export type InputType = 'string' | 'boolean' | 'number';
@@ -90,7 +90,7 @@ export class Workflow {
         name: this.name,
         on: this.trigger,
         permissions: this.permissions,
-        env: this.env,
+        env: undefinedIfEmpty(this.env),
         jobs: jobMap,
       },
     );

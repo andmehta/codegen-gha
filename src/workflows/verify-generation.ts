@@ -42,7 +42,6 @@ export const verifyGeneration = new Workflow({
     verify: new NormalJob({
       name: 'verify',
       needs: [],
-      condition: new IfCondition({ expression: 'true' }),
       runsOn: RUNS_ON.GITHUB_LATEST,
       timeoutMinutes: 10,
       env: {},
@@ -58,11 +57,13 @@ export const verifyGeneration = new Workflow({
           env: { DIFF },
           run: bash`
 {
-  echo '## Generated workflow files are out of date'
-  echo
-  echo 'Run \`pnpm exec cgha generate\` and commit the result.'
-  echo
-  echo '\`\`\`diff'
+  cat <<'EOF'
+## Generated workflow files are out of date
+
+Run \`pnpm exec cgha generate\` and commit the result.
+
+\`\`\`diff
+EOF
   echo "$DIFF"
   echo '\`\`\`'
 } >> "$GITHUB_STEP_SUMMARY"

@@ -19,7 +19,6 @@ pnpm add -D codegen-gha
 
 ```ts
 import { Workflow } from 'codegen-gha/components/workflow';
-import { IfCondition } from 'codegen-gha/components/common';
 import { NormalJob, RUNS_ON } from 'codegen-gha/components/job';
 import { BashStep } from 'codegen-gha/components/step';
 import { bash } from 'codegen-gha/components/bash-string';
@@ -27,13 +26,12 @@ import { bash } from 'codegen-gha/components/bash-string';
 export const ci = new Workflow({
   name: 'CI',
   trigger: { pull_request: null },
-  permissions: { 'id-token': 'read', contents: 'read', 'pull-requests': 'read', actions: 'read', checks: 'read' },
+  permissions: { 'id-token': 'none', contents: 'read', 'pull-requests': 'read', actions: 'read', checks: 'read' },
   env: {},
   jobs: {
     test: new NormalJob({
       name: 'test',
       needs: [],
-      condition: new IfCondition({ expression: 'true' }),
       runsOn: RUNS_ON.GITHUB_LATEST,
       timeoutMinutes: 10,
       env: {},
@@ -51,18 +49,16 @@ name: CI
 on:
   pull_request:
 permissions:
-  id-token: read
+  id-token: none
   contents: read
   pull-requests: read
   actions: read
   checks: read
-env: {}
 jobs:
   test:
     name: test
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: ${{ true }}
     steps:
       - name: Run tests
         shell: bash

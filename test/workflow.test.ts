@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { bash } from '../src/components/bash-string.ts';
-import { IfCondition } from '../src/components/if-condition.ts';
 import { NormalJob, RUNS_ON } from '../src/components/job.ts';
 import { BashStep } from '../src/components/step.ts';
 import { Workflow } from '../src/components/workflow.ts';
@@ -16,7 +15,6 @@ describe('Workflow', () => {
         test: new NormalJob({
           name: 'test',
           needs: [],
-          condition: new IfCondition({ expression: 'true' }),
           runsOn: RUNS_ON.GITHUB_LATEST,
           timeoutMinutes: 10,
           env: {},

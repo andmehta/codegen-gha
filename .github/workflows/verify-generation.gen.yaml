@@ -12,13 +12,11 @@ permissions:
   pull-requests: write
   actions: read
   checks: read
-env: {}
 jobs:
   verify:
     name: verify
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: ${{ true }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -56,11 +54,13 @@ jobs:
         shell: bash
         run: |
           {
-            echo '## Generated workflow files are out of date'
-            echo
-            echo 'Run `pnpm exec cgha generate` and commit the result.'
-            echo
-            echo '```diff'
+            cat <<'EOF'
+          ## Generated workflow files are out of date
+
+          Run `pnpm exec cgha generate` and commit the result.
+
+          ```diff
+          EOF
             echo "$DIFF"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

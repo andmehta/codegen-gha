@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 
 import { undefinedIfEmpty } from './common.ts';
-import { IfCondition } from './if-condition.ts';
+import type { IfCondition } from './if-condition.ts';
 import { Service } from './service.ts';
 import { StepUnion } from './step.ts';
 import { WorkflowComponent } from './workflow-component.ts';
@@ -56,7 +56,7 @@ export interface NormalJobConf {
   services: Record<string, Service>;
   steps: StepUnion[];
   runsOn: RunsOnSpecifier;
-  condition: IfCondition;
+  condition?: IfCondition;
   strategy?: MatrixStrategy;
   timeoutMinutes: number;
   env: Record<string, string>;
@@ -68,7 +68,7 @@ export class NormalJob extends WorkflowComponent {
   private services: Record<string, Service>;
   private steps: StepUnion[];
   private runsOn: RunsOnSpecifier;
-  private condition: IfCondition;
+  private condition: IfCondition | undefined;
   private timeoutMinutes: number;
   private env: Record<string, string>;
 
@@ -94,7 +94,7 @@ export class NormalJob extends WorkflowComponent {
       'needs': undefinedIfEmpty(this.needs),
       'runs-on': this.runsOn,
       'timeout-minutes': this.timeoutMinutes,
-      'if': this.condition.toYaml(),
+      'if': this.condition?.toYaml(),
       'services': undefinedIfEmpty(serviceMap),
       'env': undefinedIfEmpty(this.env),
       'steps': this.steps.map(s => s.toYaml()),

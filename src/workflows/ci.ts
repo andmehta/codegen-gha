@@ -1,5 +1,4 @@
 import { bash } from '../components/bash-string.ts';
-import { IfCondition } from '../components/if-condition.ts';
 import { NormalJob, RUNS_ON } from '../components/job.ts';
 import { BashStep } from '../components/step.ts';
 import { Workflow } from '../components/workflow.ts';
@@ -14,7 +13,6 @@ export const ci = new Workflow({
     test: new NormalJob({
       name: 'test',
       needs: [],
-      condition: new IfCondition({ expression: 'true' }),
       runsOn: RUNS_ON.GITHUB_LATEST,
       timeoutMinutes: 10,
       env: {},

@@ -1,5 +1,4 @@
 import { bash, ghaTemplateString } from '../components/bash-string.ts';
-import { IfCondition } from '../components/if-condition.ts';
 import { NormalJob, RUNS_ON } from '../components/job.ts';
 import { BashStep, stepOutput } from '../components/step.ts';
 import { Workflow } from '../components/workflow.ts';
@@ -34,7 +33,6 @@ export const e2eInit = new Workflow({
     init: new NormalJob({
       name: 'init',
       needs: [],
-      condition: new IfCondition({ expression: 'true' }),
       runsOn: RUNS_ON.GITHUB_LATEST,
       timeoutMinutes: 10,
       env: {},
@@ -84,16 +82,10 @@ done
         }),
         new BashStep({
           name: 'Generated workflows pass actionlint',
-          // The ignores are known generator output that's valid but noisy: an empty top-level
-          // env, the templates' constant if: true, and intentional backticks in single quotes
           run: bash`
 cd ${CONSUMER_DIR}
 bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-./actionlint \
-  -ignore 'should not be empty' \
-  -ignore 'constant expression' \
-  -ignore 'SC2016' \
-  .github/workflows/*.gen.yaml
+./actionlint .github/workflows/*.gen.yaml
 `,
         }),
         new BashStep({
