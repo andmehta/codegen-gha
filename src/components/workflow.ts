@@ -89,7 +89,10 @@ export class Workflow {
     );
 
     // if we pass a header, make sure its a proper comment
-    const commentHeader = header ? `# ${header}\n` : '';
+    // if someone uses \n in the string, we have to essentially recreate that here
+    const commentHeader = header
+      ? header.split('\n').map(line => `# ${line}`).join('\n') + '\n'
+      : '';
 
     const contents = commentHeader + doc.toString({
       lineWidth: 0,

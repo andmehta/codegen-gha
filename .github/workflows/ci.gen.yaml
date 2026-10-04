@@ -1,4 +1,5 @@
-# DO NOT MODIFY. this file is generated using the `cgha generate` command\n generated from [src/workflows/ci.ts]
+# DO NOT MODIFY. this file is generated using the `cgha generate` command
+# generated from [src/workflows/ci.ts]
 name: CI
 on:
   pull_request:

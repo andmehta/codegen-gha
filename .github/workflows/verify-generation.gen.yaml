@@ -1,4 +1,5 @@
-# DO NOT MODIFY. this file is generated using the `cgha generate` command\n generated from [src/workflows/verify-generation.ts]
+# DO NOT MODIFY. this file is generated using the `cgha generate` command
+# generated from [src/workflows/verify-generation.ts]
 name: Verify Generation
 on:
   pull_request:

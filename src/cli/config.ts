@@ -15,7 +15,7 @@ export const DEFAULT_CONFIG: CodegenGhaConfig = {
   include: ['workflows/*.ts'],
   outDir: '.github/workflows',
   suffix: '.gen.yaml',
-  commentHeader: 'DO NOT MODIFY. this file is generated using the `cgha generate` command\n generated from [{file}]',
+  commentHeader: 'DO NOT MODIFY. this file is generated using the `cgha generate` command\ngenerated from [{file}]',
 };
 
 export function loadConfig(cwd: string): CodegenGhaConfig {
