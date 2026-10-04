@@ -40,7 +40,8 @@ export interface WorkflowConf {
 type ReadOrWrite = 'read' | 'write';
 
 interface Permissions {
-  'id-token': ReadOrWrite;
+  // OIDC tokens have no read-only mode, so GitHub only accepts 'write' or 'none' here
+  'id-token': 'write' | 'none';
   'contents': ReadOrWrite;
   'pull-requests': ReadOrWrite;
   'checks': ReadOrWrite;

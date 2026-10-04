@@ -8,7 +8,7 @@ import { checkout, setupPnpm } from '../lib/index.ts';
 export const ci = new Workflow({
   name: 'CI',
   trigger: { pull_request: null, push: { branches: ['main'] } },
-  permissions: { 'id-token': 'read', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+  permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
   env: {},
   jobs: {
     test: new NormalJob({

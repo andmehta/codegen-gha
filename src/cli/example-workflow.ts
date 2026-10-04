@@ -7,7 +7,7 @@ import { Workflow } from '../components/workflow.ts';
 export const example = new Workflow({
   name: 'Example',
   trigger: { pull_request: null },
-  permissions: { 'id-token': 'read', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+  permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
   env: {},
   jobs: {
     test: new NormalJob({

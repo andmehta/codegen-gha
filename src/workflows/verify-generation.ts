@@ -1,14 +1,14 @@
-import { bash } from '../../components/bashString.ts';
-import { IfCondition } from '../../components/common.ts';
-import { NormalJob, RUNS_ON } from '../../components/job.ts';
-import { BashStep } from '../../components/step.ts';
-import { Workflow } from '../../components/workflow.ts';
-import { checkout, setupPnpm } from '../../lib/index.ts';
+import { bash } from '../components/bashString.ts';
+import { IfCondition } from '../components/common.ts';
+import { NormalJob, RUNS_ON } from '../components/job.ts';
+import { BashStep } from '../components/step.ts';
+import { Workflow } from '../components/workflow.ts';
+import { checkout, setupPnpm } from '../lib/index.ts';
 
 export const verifyGeneration = new Workflow({
   name: 'Verify Generation',
   trigger: { pull_request: null, push: { branches: ['main'] } },
-  permissions: { 'id-token': 'read', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+  permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
   env: {},
   jobs: {
     verify: new NormalJob({
