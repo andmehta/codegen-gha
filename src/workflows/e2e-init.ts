@@ -104,6 +104,24 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 `,
         }),
+        new BashStep({
+          name: 'Deleting a workflow source removes its generated file',
+          run: bash`
+cd ${CONSUMER_DIR}
+rm workflows/example.ts
+
+pnpm exec cgha generate
+
+if [ -e .github/workflows/example.gen.yaml ]; then
+  echo "::error::cgha generate kept example.gen.yaml after workflows/example.ts was deleted"
+  exit 1
+fi
+if [ ! -f .github/workflows/verify-generation.gen.yaml ]; then
+  echo "::error::cgha generate removed verify-generation.gen.yaml, whose source still exists"
+  exit 1
+fi
+`,
+        }),
       ],
     }),
   },

@@ -21,6 +21,8 @@ function importWorkflowModule(absPath: string): Promise<Record<string, unknown>>
 
 export async function generate(config: CodegenGhaConfig, cwd: string = process.cwd()): Promise<void> {
   const outDir = path.resolve(cwd, config.outDir);
+  const existingFiles = await glob(path.join(outDir, `*${config.suffix}`), { cwd: outDir, absolute: true, nodir: true });
+  await Promise.all(existingFiles.map((file) => fs.promises.rm(file)));
   fs.mkdirSync(outDir, { recursive: true });
 
   const files = await glob(config.include, { cwd, absolute: true, nodir: true });
