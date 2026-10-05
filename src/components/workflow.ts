@@ -39,7 +39,7 @@ export interface WorkflowConf {
   name: string;
   trigger: WorkflowTrigger;
   jobs: Record<string, NormalJob>;
-  env: EnvConf;
+  env?: EnvConf;
   // inputs: Record<string, Input<any>>;
   permissions: Permissions;
 }
@@ -71,7 +71,7 @@ export class Workflow {
   private permissions: Permissions;
 
   constructor(conf: WorkflowConf) {
-    const { name, trigger, jobs, env, permissions } = conf;
+    const { name, trigger, jobs, env = {}, permissions } = conf;
 
     this.name = name;
     this.trigger = trigger;

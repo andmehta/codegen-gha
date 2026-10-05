@@ -8,15 +8,11 @@ export const ci = new Workflow({
   name: 'CI',
   trigger: { pull_request: null, push: { branches: ['main'] } },
   permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
-  env: {},
   jobs: {
     test: new NormalJob({
       name: 'test',
-      needs: [],
       runsOn: RUNS_ON.GITHUB_LATEST,
       timeoutMinutes: 10,
-      env: {},
-      services: {},
       steps: [
         checkout,
         setupPnpm,

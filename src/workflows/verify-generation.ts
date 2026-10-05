@@ -35,15 +35,11 @@ export const verifyGeneration = new Workflow({
   name: 'Verify Generation',
   trigger: { pull_request: null, push: { branches: ['main'] } },
   permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'write', 'actions': 'read', 'checks': 'read' },
-  env: {},
   jobs: {
     verify: new NormalJob({
       name: 'verify',
-      needs: [],
       runsOn: RUNS_ON.GITHUB_LATEST,
       timeoutMinutes: 10,
-      env: {},
-      services: {},
       steps: [
         checkout,
         setupPnpm,
