@@ -14,6 +14,6 @@ export const checkout = new ActionStep({
 
 export const setupPnpm = new ActionStep({
   name: 'Setup pnpm',
-  actionSpecifier: 'pnpm/action-setup@v5',
-  params: { version: '10.33.0' },
+  actionSpecifier: 'pnpm/setup@v1',
+  params: { cache: true, install: false },
 });
