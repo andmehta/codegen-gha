@@ -10,7 +10,7 @@ const COMPONENT_IMPORT = /^import \{([^}]+)\} from '\.\.\/components\/([\w-]+)\.
 // This repo runs its generator from source through a projen task, which a consumer won't have,
 // so scaffolded workflows call the installed CLI instead
 export const INTERNAL_GENERATE_COMMAND = 'pnpm run generate';
-export const PUBLIC_GENERATE_COMMAND = 'pnpm exec cgha generate';
+export const PUBLIC_GENERATE_COMMAND = 'cgha generate';
 
 interface Template {
   /** Real source file, relative to this one; post-compile copies each next to the emitted js */
