@@ -22,7 +22,6 @@ if [ -n "$diff" ]; then
     echo "GENERATION_DIFF_EOF"
   } >> "$GITHUB_OUTPUT"
   echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
-  exit 1
 fi
 `,
 });

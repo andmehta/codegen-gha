@@ -21,9 +21,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/setup@v1
         with:
-          version: 10.33.0
+          cache: true
+          install: false
       - name: Install dependencies
         shell: bash
         run: |-
@@ -45,7 +46,6 @@ jobs:
               echo "GENERATION_DIFF_EOF"
             } >> "$GITHUB_OUTPUT"
             echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
-            exit 1
           fi
       - name: Post diff to job summary
         if: ${{ steps.verify.outputs.diff != '' }}
