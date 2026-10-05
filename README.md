@@ -40,6 +40,7 @@ export const ci = new Workflow({
     test: new NormalJob({
       name: 'test',
       runsOn: RUNS_ON.GITHUB_LATEST,
+      timeoutMinutes: 10,
       steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
     }),
   },
@@ -62,6 +63,7 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Run tests
         shell: bash
