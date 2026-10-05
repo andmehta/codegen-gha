@@ -19,6 +19,11 @@ export class IfCondition extends WorkflowComponent {
     return new IfCondition({ expression: `${output} == '${value}'` });
   }
 
+  static stepOutputNull(otherStep: StepUnion, outputKey: string) {
+    const output = stepOutput(otherStep, outputKey);
+    return new IfCondition({ expression: `${output} == ''` });
+  }
+
   static isPullRequest() {
     return new IfCondition({ expression: "github.event_name == 'pull_request'" });
   }
@@ -47,8 +52,11 @@ export class IfCondition extends WorkflowComponent {
   /**
    * Combine with another expression, e.g. a status function like failure(). GitHub only adds
    * its implicit success() when the expression has no status function of its own.
+   *
+   * Parenthesized because && binds tighter than ||, so a later and() would otherwise split it,
+   * e.g. a.or(b).and(c) becoming `a || (b && c)`.
    */
   or(otherCondition: IfCondition): IfCondition {
-    return new IfCondition({ expression: `${this.expression} || ${otherCondition.expression}` });
+    return new IfCondition({ expression: `(${this.expression} || ${otherCondition.expression})` });
   }
 }
