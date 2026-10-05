@@ -24,6 +24,16 @@ Requires Node.js 20.11 or later. The package is ESM-only, so import it with `imp
 > [!NOTE]
 > `codegen-gha` is pre-1.0. Breaking changes can land in any minor release, so consider pinning the version.
 
+### pnpm 12+
+
+pnpm 12 fails the install until the build script of `esbuild` (pulled in by `tsx`) is approved. Approve it with [`--allow-build`](https://pnpm.io/cli/add#--allow-build):
+
+```sh
+pnpm add -D codegen-gha --allow-build=esbuild
+```
+
+This saves the approval under [`allowBuilds`](https://pnpm.io/settings/build#allowbuilds) in `pnpm-workspace.yaml`, so later installs don't fail. If an install already failed, run `pnpm approve-builds esbuild` instead.
+
 ## Example
 
 ```ts
