@@ -28,15 +28,11 @@ export const e2eInit = new Workflow({
   name: 'E2E Init',
   trigger: { pull_request: null, push: { branches: ['main'] } },
   permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
-  env: {},
   jobs: {
     init: new NormalJob({
       name: 'init',
-      needs: [],
       runsOn: RUNS_ON.GITHUB_LATEST,
       timeoutMinutes: 10,
-      env: {},
-      services: {},
       steps: [
         checkout,
         setupPnpm,

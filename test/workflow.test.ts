@@ -26,4 +26,25 @@ describe('Workflow', () => {
 
     expect(workflow.serialize()).toContain('name: test');
   });
+
+  it('omits needs, env, services and timeout-minutes when not provided', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: { pull_request: null },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).not.toContain('env:');
+    expect(yaml).not.toContain('needs:');
+    expect(yaml).not.toContain('services:');
+    expect(yaml).not.toContain('timeout-minutes:');
+  });
 });

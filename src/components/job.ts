@@ -52,14 +52,14 @@ interface MatrixStrategy {
 
 export interface NormalJobConf {
   name: string;
-  needs: string[];
-  services: Record<string, Service>;
+  needs?: string[];
+  services?: Record<string, Service>;
   steps: StepUnion[];
   runsOn: RunsOnSpecifier;
   condition?: IfCondition;
   strategy?: MatrixStrategy;
-  timeoutMinutes: number;
-  env: Record<string, string>;
+  timeoutMinutes?: number;
+  env?: Record<string, string>;
 }
 
 export class NormalJob extends WorkflowComponent {
@@ -69,12 +69,12 @@ export class NormalJob extends WorkflowComponent {
   private steps: StepUnion[];
   private runsOn: RunsOnSpecifier;
   private condition: IfCondition | undefined;
-  private timeoutMinutes: number;
+  private timeoutMinutes: number | undefined;
   private env: Record<string, string>;
 
   constructor(conf: NormalJobConf) {
     super();
-    const { services, name, needs, steps, runsOn, condition, timeoutMinutes, env } = conf;
+    const { services = {}, name, needs = [], steps, runsOn, condition, timeoutMinutes, env = {} } = conf;
     this.name = name;
     this.needs = needs;
     this.services = services;
