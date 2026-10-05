@@ -1,5 +1,6 @@
 import YAML from 'yaml';
 
+import { ghaTemplateString } from './bash-string.ts';
 import { undefinedIfEmpty } from './common.ts';
 import type { IfCondition } from './if-condition.ts';
 import { Service } from './service.ts';
@@ -38,16 +39,20 @@ export const RUNS_ON: Record<string, RunsOnSpecifier> = {
 
 type Scalar = string | number | boolean;
 
-type RawMatrix = Record<string, Scalar[]>;
-interface ReferenceMatrix {
+export type RawMatrix = Record<string, Scalar[]>;
+export interface ReferenceMatrix {
   expression: string;
 }
 
-type Matrix = RawMatrix | ReferenceMatrix;
+export type Matrix = RawMatrix | ReferenceMatrix;
 
-interface MatrixStrategy {
+export interface MatrixStrategy {
   failFast: boolean;
   matrix: Matrix;
+}
+
+function isReferenceMatrix(matrix: Matrix): matrix is ReferenceMatrix {
+  return typeof (matrix as ReferenceMatrix).expression === 'string';
 }
 
 export interface NormalJobConf {
@@ -69,18 +74,20 @@ export class NormalJob extends WorkflowComponent {
   private steps: StepUnion[];
   private runsOn: RunsOnSpecifier;
   private condition: IfCondition | undefined;
+  private strategy: MatrixStrategy | undefined;
   private timeoutMinutes: number | undefined;
   private env: Record<string, string>;
 
   constructor(conf: NormalJobConf) {
     super();
-    const { services = {}, name, needs = [], steps, runsOn, condition, timeoutMinutes, env = {} } = conf;
+    const { services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {} } = conf;
     this.name = name;
     this.needs = needs;
     this.services = services;
     this.steps = steps;
     this.runsOn = runsOn;
     this.condition = condition;
+    this.strategy = strategy;
     this.timeoutMinutes = timeoutMinutes;
     this.env = env;
   }
@@ -89,12 +96,19 @@ export class NormalJob extends WorkflowComponent {
     Object.entries(this.services).forEach(([sName, sDef]) => {
       serviceMap[sName] = sDef.toYaml();
     });
+    const strategy = this.strategy && {
+      'fail-fast': this.strategy.failFast,
+      'matrix': isReferenceMatrix(this.strategy.matrix)
+        ? ghaTemplateString(this.strategy.matrix.expression)
+        : this.strategy.matrix,
+    };
     return new YAML.Document({
       'name': this.name,
       'needs': undefinedIfEmpty(this.needs),
       'runs-on': this.runsOn,
       'timeout-minutes': this.timeoutMinutes,
       'if': this.condition?.toYaml(),
+      'strategy': strategy,
       'services': undefinedIfEmpty(serviceMap),
       'env': undefinedIfEmpty(this.env),
       'steps': this.steps.map(s => s.toYaml()),
