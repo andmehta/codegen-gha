@@ -66,10 +66,12 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Comment diff on PR
         if: ${{ github.event_name == 'pull_request' && steps.verify.outputs.diff != '' }}
-        uses: peter-evans/create-or-update-comment@v5
+        uses: marocchino/sticky-pull-request-comment@v3.0.5
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |-
+          header: codegen-gha-verify-generation
+          hide_and_recreate: true
+          hide_classify: OUTDATED
+          message: |-
             ## Generated workflow files are out of date
 
             Run `pnpm run generate` and commit the result.
@@ -77,6 +79,13 @@ jobs:
             ```diff
             ${{ steps.verify.outputs.diff }}
             ```
+      - name: Resolve the diff comment on PR
+        if: ${{ github.event_name == 'pull_request' && steps.verify.outputs.diff == '' }}
+        uses: marocchino/sticky-pull-request-comment@v3.0.5
+        with:
+          header: codegen-gha-verify-generation
+          hide: true
+          hide_classify: RESOLVED
       - name: Fail Job if we did not generate everything
         if: ${{ steps.verify.outputs.diff != '' }}
         shell: bash

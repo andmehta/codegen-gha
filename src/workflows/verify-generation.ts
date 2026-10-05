@@ -27,7 +27,11 @@ fi
 });
 
 const HAS_DIFF = IfCondition.stepOutputNotNull(VERIFY_STEP, 'diff');
+const NO_DIFF = IfCondition.stepOutputNull(VERIFY_STEP, 'diff');
 const DIFF = ghaTemplateString(stepOutput(VERIFY_STEP, 'diff'));
+
+const STICKY_COMMENT = 'marocchino/sticky-pull-request-comment@v3.0.5';
+const COMMENT_HEADER = 'codegen-gha-verify-generation';
 
 
 export const verifyGeneration = new Workflow({
@@ -66,10 +70,13 @@ EOF
           name: 'Comment diff on PR',
           // push events to main have no PR to comment on
           condition: IfCondition.isPullRequest().and(HAS_DIFF),
-          actionSpecifier: 'peter-evans/create-or-update-comment@v5',
+          actionSpecifier: STICKY_COMMENT,
           params: {
-            'issue-number': ghaTemplateString('github.event.pull_request.number'),
-            'body': [
+            header: COMMENT_HEADER,
+            // Collapse the previous diff as outdated and post the current one
+            hide_and_recreate: true,
+            hide_classify: 'OUTDATED',
+            message: [
               '## Generated workflow files are out of date',
               '',
               'Run `pnpm run generate` and commit the result.',
@@ -78,6 +85,17 @@ EOF
               DIFF,
               '```',
             ].join('\n'),
+          },
+        }),
+        new ActionStep({
+          name: 'Resolve the diff comment on PR',
+          // A no-op when this PR has no visible diff comment
+          condition: IfCondition.isPullRequest().and(NO_DIFF),
+          actionSpecifier: STICKY_COMMENT,
+          params: {
+            header: COMMENT_HEADER,
+            hide: true,
+            hide_classify: 'RESOLVED',
           },
         }),
         new BashStep({
