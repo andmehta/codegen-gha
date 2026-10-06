@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 
 import { ghaTemplateString } from './bash-string.ts';
-import { Concurrency, concurrencyToYaml, undefinedIfEmpty } from './common.ts';
+import { Concurrency, concurrencyToYaml, slugify, undefinedIfEmpty } from './common.ts';
 import type { IfCondition } from './if-condition.ts';
 import { Service } from './service.ts';
 import { StepUnion } from './step.ts';
@@ -62,7 +62,26 @@ export interface JobDefaults {
   };
 }
 
+// GitHub requires a job id (its key in the `jobs` map) to start with a letter or `_` and
+// contain only alphanumerics, `-` and `_`
+const VALID_JOB_ID = /^[a-z_][a-z0-9_-]*$/;
+
+/**
+ * Note this `id` is not written into the job's own YAML (a job has no such field); it must
+ * match whatever key the caller gives this job in the workflow's `jobs` map, so that
+ * `jobOutput` can build a `needs.<id>.outputs.<key>` reference to it.
+ */
+function toJobId(id: string | undefined): string | undefined {
+  if (id === undefined) return undefined;
+  const slug = slugify(id);
+  if (!VALID_JOB_ID.test(slug)) {
+    throw new Error(`Job id '${id}' slugifies to '${slug}', which isn't a valid id: it must start with a letter or _`);
+  }
+  return slug;
+}
+
 export interface NormalJobConf {
+  id?: string;
   name: string;
   needs?: string[];
   services?: Record<string, Service>;
@@ -72,12 +91,14 @@ export interface NormalJobConf {
   strategy?: MatrixStrategy;
   timeoutMinutes?: number;
   env?: Record<string, string>;
+  outputs?: Record<string, string>;
   concurrency?: Concurrency;
   continueOnError?: boolean | string;
   defaults?: JobDefaults;
 }
 
 export class NormalJob extends WorkflowComponent {
+  public readonly id: string | undefined;
   private name: string;
   private needs: string[];
   private services: Record<string, Service>;
@@ -87,6 +108,7 @@ export class NormalJob extends WorkflowComponent {
   private strategy: MatrixStrategy | undefined;
   private timeoutMinutes: number | undefined;
   private env: Record<string, string>;
+  private outputs: Record<string, string>;
   private concurrency: Concurrency | undefined;
   private continueOnError: boolean | string | undefined;
   private defaults: JobDefaults | undefined;
@@ -94,8 +116,10 @@ export class NormalJob extends WorkflowComponent {
   constructor(conf: NormalJobConf) {
     super();
     const {
-      services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {}, concurrency, continueOnError, defaults,
+      id, services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {}, outputs = {},
+      concurrency, continueOnError, defaults,
     } = conf;
+    this.id = toJobId(id);
     this.name = name;
     this.needs = needs;
     this.services = services;
@@ -105,6 +129,7 @@ export class NormalJob extends WorkflowComponent {
     this.strategy = strategy;
     this.timeoutMinutes = timeoutMinutes;
     this.env = env;
+    this.outputs = outputs;
     this.concurrency = concurrency;
     this.continueOnError = continueOnError;
     this.defaults = defaults;
@@ -138,9 +163,22 @@ export class NormalJob extends WorkflowComponent {
       'defaults': defaults,
       'services': undefinedIfEmpty(serviceMap),
       'env': undefinedIfEmpty(this.env),
+      'outputs': undefinedIfEmpty(this.outputs),
       'steps': this.steps.map(s => s.toYaml()),
     });
   }
+}
+
+/**
+ * Reference to another job's output, e.g. `needs.detect.outputs.web`.
+ * GitHub can only address a job's outputs through its id, so the job must have one that
+ * matches its key in the workflow's `jobs` map.
+ */
+export function jobOutput(job: NormalJob, outputKey: string): string {
+  if (!job.id) {
+    throw new Error(`Cannot reference output '${outputKey}' of a job with no id`);
+  }
+  return `needs.${job.id}.outputs.${outputKey}`;
 }
 
 type WorkflowSpecifier = `./.github/workflows/${string}`;

@@ -1,5 +1,6 @@
 import YAML from 'yaml';
 import { ghaTemplateString } from './bash-string.ts';
+import { jobOutput, type NormalJob } from './job.ts';
 import { stepOutput, type StepUnion } from './step.ts';
 import { WorkflowComponent } from './workflow-component.ts';
 
@@ -11,6 +12,11 @@ export class IfCondition extends WorkflowComponent {
   static stepOutputNotNull(otherStep: StepUnion, outputKey: string) {
     const output = stepOutput(otherStep, outputKey);
     return new IfCondition({ expression: `${output} != ''` });
+  }
+
+  static jobOutputEquals(otherJob: NormalJob, outputKey: string, value: string) {
+    const output = jobOutput(otherJob, outputKey);
+    return new IfCondition({ expression: `${output} == '${value}'` });
   }
 
   static isPullRequest() {
