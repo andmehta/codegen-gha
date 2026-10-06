@@ -3,6 +3,9 @@
 name: E2E Init
 on:
   pull_request:
+    paths:
+      - src/workflows/e2e-init.ts
+      - src/cli/**
   push:
     branches:
       - main

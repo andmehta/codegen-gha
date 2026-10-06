@@ -26,7 +26,8 @@ echo "tarball=$(ls "$PWD"/dist/js/codegen-gha-*.tgz)" >> "$GITHUB_OUTPUT"
 
 export const e2eInit = new Workflow({
   name: 'E2E Init',
-  trigger: { pull_request: null, push: { branches: ['main'] } },
+  trigger: { pull_request: { paths: ['src/workflows/e2e-init.ts', 'src/cli/**']}, push: { branches: ['main'] } },
+
   permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
   jobs: {
     init: new NormalJob({
