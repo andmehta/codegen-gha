@@ -1,4 +1,4 @@
-# DO NOT MODIFY. this file is generated using the `cgha generate` command
+# DO NOT MODIFY. this file is generated using the `pnpm generate` command
 # generated from [src/workflows/verify-generation.ts]
 name: Verify Generation
 on:
@@ -21,9 +21,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/setup@v1
         with:
-          version: 10.33.0
+          cache: true
+          install: false
       - name: Install dependencies
         shell: bash
         run: |-
@@ -45,7 +46,6 @@ jobs:
               echo "GENERATION_DIFF_EOF"
             } >> "$GITHUB_OUTPUT"
             echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
-            exit 1
           fi
       - name: Post diff to job summary
         if: ${{ steps.verify.outputs.diff != '' }}
@@ -66,10 +66,12 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Comment diff on PR
         if: ${{ github.event_name == 'pull_request' && steps.verify.outputs.diff != '' }}
-        uses: peter-evans/create-or-update-comment@v5
+        uses: marocchino/sticky-pull-request-comment@v3.0.5
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |-
+          header: codegen-gha-verify-generation
+          hide_and_recreate: true
+          hide_classify: OUTDATED
+          message: |-
             ## Generated workflow files are out of date
 
             Run `pnpm run generate` and commit the result.
@@ -77,6 +79,13 @@ jobs:
             ```diff
             ${{ steps.verify.outputs.diff }}
             ```
+      - name: Resolve the diff comment on PR
+        if: ${{ github.event_name == 'pull_request' && steps.verify.outputs.diff == '' }}
+        uses: marocchino/sticky-pull-request-comment@v3.0.5
+        with:
+          header: codegen-gha-verify-generation
+          hide: true
+          hide_classify: RESOLVED
       - name: Fail Job if we did not generate everything
         if: ${{ steps.verify.outputs.diff != '' }}
         shell: bash

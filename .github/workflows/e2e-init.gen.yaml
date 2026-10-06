@@ -1,8 +1,11 @@
-# DO NOT MODIFY. this file is generated using the `cgha generate` command
+# DO NOT MODIFY. this file is generated using the `pnpm generate` command
 # generated from [src/workflows/e2e-init.ts]
 name: E2E Init
 on:
   pull_request:
+    paths:
+      - src/workflows/e2e-init.ts
+      - src/cli/**
   push:
     branches:
       - main
@@ -21,9 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/setup@v1
         with:
-          version: 10.33.0
+          cache: true
+          install: false
       - name: Install dependencies
         shell: bash
         run: |-
@@ -91,5 +95,21 @@ jobs:
             echo "::error::A second cgha generate changed files it had already generated"
             git status --porcelain
             git diff
+            exit 1
+          fi
+      - name: Deleting a workflow source removes its generated file
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/consumer"
+          rm workflows/example.ts
+
+          pnpm exec cgha generate
+
+          if [ -e .github/workflows/example.gen.yaml ]; then
+            echo "::error::cgha generate kept example.gen.yaml after workflows/example.ts was deleted"
+            exit 1
+          fi
+          if [ ! -f .github/workflows/verify-generation.gen.yaml ]; then
+            echo "::error::cgha generate removed verify-generation.gen.yaml, whose source still exists"
             exit 1
           fi

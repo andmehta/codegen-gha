@@ -4,5 +4,5 @@ include:
 outDir: .github/workflows
 suffix: .gen.yaml
 commentHeader: |-
-  DO NOT MODIFY. this file is generated using the `cgha generate` command
+  DO NOT MODIFY. this file is generated using the `pnpm generate` command
   generated from [{file}]

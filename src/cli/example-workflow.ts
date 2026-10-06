@@ -2,6 +2,7 @@ import { bash } from '../components/bash-string.ts';
 import { NormalJob, RUNS_ON } from '../components/job.ts';
 import { BashStep } from '../components/step.ts';
 import { Workflow } from '../components/workflow.ts';
+import { checkout, setupPnpm } from '../lib/index.ts';
 
 export const example = new Workflow({
   name: 'Example',
@@ -12,7 +13,7 @@ export const example = new Workflow({
       name: 'test',
       runsOn: RUNS_ON.GITHUB_LATEST,
       timeoutMinutes: 10,
-      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+      steps: [checkout, setupPnpm, new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
     }),
   },
 });

@@ -5,14 +5,9 @@ const project = new typescript.TypeScriptProject({
   repository: 'https://github.com/andmehta/codegen-gha.git',
   authorName: 'Andrew Mehta',
   keywords: ['github-actions', 'github', 'workflow', 'ci', 'codegen', 'yaml', 'typescript', 'cli'],
-  // Publish via GitHub OIDC trusted publishing, so no NPM_TOKEN secret is needed. The trusted
-  // publisher must be configured on npmjs.com for this repo and the release.yml workflow.
   releaseToNpm: true,
   npmTrustedPublishing: true,
   npmProvenance: true,
-  // The first public release jumps from the v0.0.x tags to 0.1.0. Once a v0.1.x tag exists this
-  // prints nothing, so later releases fall back to the normal commit-derived bump. Safe to delete then.
-  nextVersionCommand: '[ -n "$(git tag -l \'v0.1.*\')" ] || echo 0.1.0',
   packageManager: javascript.NodePackageManager.PNPM,
   githubOptions: {
     // Use the default GITHUB_TOKEN instead of requiring a PROJEN_GITHUB_TOKEN PAT secret.
@@ -24,8 +19,6 @@ const project = new typescript.TypeScriptProject({
       },
     },
   },
-  // Only emit the corepack `packageManager` field, not `devEngines.packageManager`.
-  // pnpm warns and ignores `packageManager` when both are present.
   addPackageManagerToDevEngines: false,
   projenrcTs: true,
   defaultReleaseBranch: 'main',
@@ -43,10 +36,7 @@ const project = new typescript.TypeScriptProject({
   bin: {
     cgha: 'lib/cli/index.js',
   },
-  // No barrel file: consumers import subpaths directly (e.g. `codegen-gha/components/workflow`),
-  // resolved by the wildcard "exports" map below instead of a root `main`/`types` entrypoint.
   entrypoint: '',
-  // This package is ESM-only: no CommonJS output, no `require()`.
   tsconfig: {
     compilerOptions: {
       target: 'ES2022',
@@ -54,7 +44,6 @@ const project = new typescript.TypeScriptProject({
       module: 'NodeNext',
       moduleResolution: javascript.TypeScriptModuleResolution.NODE_NEXT,
       isolatedModules: true,
-      // Allows literal `.ts` extensions in relative imports instead of NodeNext's required `.js`.
       allowImportingTsExtensions: true,
     },
   },
@@ -64,7 +53,7 @@ const project = new typescript.TypeScriptProject({
   gitignore: ['.context/', '/test-reports/'],
   npmIgnoreOptions: {
     // This repo's own generator config, not something consumers need
-    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts', '/codegen-gha.yaml', '/pnpm-workspace.yaml'],
+    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts', '/codegen-gha.yaml', '/pnpm-workspace.yaml', '/workflows/e2e-init.ts'],
   },
 });
 
@@ -101,9 +90,7 @@ project.postCompileTask.exec('cp src/workflows/verify-generation.ts lib/workflow
 project.postCompileTask.exec('cp src/lib/index.ts lib/lib/index.ts');
 
 // Stage releases on npm instead of publishing them directly, so a version only goes live after a
-// maintainer approves it with 2FA (npmjs.com → Staged Packages, or `npm stage approve <id>`). The
-// trusted publisher is stage-only, without "npm publish" under Allowed actions. publib always runs
-// `npm publish`, so its step is swapped for `npm stage publish`, which needs npm 12+.
+// maintainer approves it with 2FA
 const releaseWorkflow = project.github?.tryFindWorkflow('release');
 releaseWorkflow?.file?.addOverride('jobs.release_npm.name', 'Stage on npm');
 releaseWorkflow?.file?.addOverride('jobs.release_npm.steps.3.name', 'Stage');

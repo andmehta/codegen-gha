@@ -26,7 +26,8 @@ echo "tarball=$(ls "$PWD"/dist/js/codegen-gha-*.tgz)" >> "$GITHUB_OUTPUT"
 
 export const e2eInit = new Workflow({
   name: 'E2E Init',
-  trigger: { pull_request: null, push: { branches: ['main'] } },
+  trigger: { pull_request: { paths: ['src/workflows/e2e-init.ts', 'src/cli/**'] }, push: { branches: ['main'] } },
+
   permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
   jobs: {
     init: new NormalJob({
@@ -100,6 +101,24 @@ if [ -n "$(git status --porcelain)" ]; then
   echo "::error::A second cgha generate changed files it had already generated"
   git status --porcelain
   git diff
+  exit 1
+fi
+`,
+        }),
+        new BashStep({
+          name: 'Deleting a workflow source removes its generated file',
+          run: bash`
+cd ${CONSUMER_DIR}
+rm workflows/example.ts
+
+pnpm exec cgha generate
+
+if [ -e .github/workflows/example.gen.yaml ]; then
+  echo "::error::cgha generate kept example.gen.yaml after workflows/example.ts was deleted"
+  exit 1
+fi
+if [ ! -f .github/workflows/verify-generation.gen.yaml ]; then
+  echo "::error::cgha generate removed verify-generation.gen.yaml, whose source still exists"
   exit 1
 fi
 `,
