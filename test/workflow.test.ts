@@ -117,7 +117,7 @@ describe('Workflow', () => {
           'branches-ignore': ['releases/**'],
         },
         push: {
-          tags: ['v*'],
+          'tags': ['v*'],
           'tags-ignore': ['v*-beta'],
         },
       },
