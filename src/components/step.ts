@@ -24,6 +24,8 @@ export interface BashStepConf {
   id?: string;
   condition?: IfCondition;
   env?: Record<string, string>;
+  continueOnError?: boolean | string;
+  timeoutMinutes?: number;
 }
 export class BashStep extends WorkflowComponent {
   private name: string;
@@ -31,22 +33,28 @@ export class BashStep extends WorkflowComponent {
   public readonly id: string | undefined;
   private condition: IfCondition | undefined;
   private env: Record<string, string> | undefined;
+  private continueOnError: boolean | string | undefined;
+  private timeoutMinutes: number | undefined;
   constructor(conf: BashStepConf) {
     super();
-    const { name, run, id, condition, env } = conf;
+    const { name, run, id, condition, env, continueOnError, timeoutMinutes } = conf;
     this.name = name;
     this.run = run;
     this.id = toStepId(id);
     this.condition = condition;
     this.env = env;
+    this.continueOnError = continueOnError;
+    this.timeoutMinutes = timeoutMinutes;
   }
   toYaml(): YAML.Document {
     const doc = new YAML.Document({
-      name: this.name,
-      id: this.id,
-      if: this.condition?.toYaml(),
-      env: undefinedIfEmpty(this.env),
-      shell: 'bash',
+      'name': this.name,
+      'id': this.id,
+      'if': this.condition?.toYaml(),
+      'env': undefinedIfEmpty(this.env),
+      'continue-on-error': this.continueOnError,
+      'timeout-minutes': this.timeoutMinutes,
+      'shell': 'bash',
       // run: this.run,
     });
     const runNode = doc.createNode(this.run);
@@ -64,6 +72,8 @@ export interface ActionStepConf {
   env?: Record<string, string>;
   id?: string;
   condition?: IfCondition;
+  continueOnError?: boolean | string;
+  timeoutMinutes?: number;
 }
 
 type PublicActionSpecifierVersioned = `${string}/${string}@v${number}`;
@@ -79,25 +89,31 @@ export class ActionStep extends WorkflowComponent {
   private env: Record<string, string> | undefined;
   public readonly id: string | undefined;
   private condition: IfCondition | undefined;
+  private continueOnError: boolean | string | undefined;
+  private timeoutMinutes: number | undefined;
 
   constructor(conf: ActionStepConf) {
     super();
-    const { name, actionSpecifier, params, env, id, condition } = conf;
+    const { name, actionSpecifier, params, env, id, condition, continueOnError, timeoutMinutes } = conf;
     this.name = name;
     this.actionSpecifier = actionSpecifier;
     this.params = params;
     this.env = env;
     this.id = toStepId(id);
     this.condition = condition;
+    this.continueOnError = continueOnError;
+    this.timeoutMinutes = timeoutMinutes;
   }
   public toYaml(): YAML.Document {
     return new YAML.Document({
-      name: this.name,
-      id: this.id,
-      if: this.condition?.toYaml(),
-      uses: this.actionSpecifier,
-      env: undefinedIfEmpty(this.env),
-      with: undefinedIfEmpty(this.params),
+      'name': this.name,
+      'id': this.id,
+      'if': this.condition?.toYaml(),
+      'uses': this.actionSpecifier,
+      'env': undefinedIfEmpty(this.env),
+      'continue-on-error': this.continueOnError,
+      'timeout-minutes': this.timeoutMinutes,
+      'with': undefinedIfEmpty(this.params),
     });
   }
 }
