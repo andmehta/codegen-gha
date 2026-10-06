@@ -66,6 +66,7 @@ export interface NormalJobConf {
   timeoutMinutes?: number;
   env?: Record<string, string>;
   concurrency?: Concurrency;
+  continueOnError?: boolean | string;
 }
 
 export class NormalJob extends WorkflowComponent {
@@ -79,10 +80,11 @@ export class NormalJob extends WorkflowComponent {
   private timeoutMinutes: number | undefined;
   private env: Record<string, string>;
   private concurrency: Concurrency | undefined;
+  private continueOnError: boolean | string | undefined;
 
   constructor(conf: NormalJobConf) {
     super();
-    const { services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {}, concurrency } = conf;
+    const { services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {}, concurrency, continueOnError } = conf;
     this.name = name;
     this.needs = needs;
     this.services = services;
@@ -93,6 +95,7 @@ export class NormalJob extends WorkflowComponent {
     this.timeoutMinutes = timeoutMinutes;
     this.env = env;
     this.concurrency = concurrency;
+    this.continueOnError = continueOnError;
   }
   public toYaml(): YAML.Document {
     const serviceMap: Record<string, YAML.Document> = {};
@@ -111,6 +114,7 @@ export class NormalJob extends WorkflowComponent {
       'runs-on': this.runsOn,
       'timeout-minutes': this.timeoutMinutes,
       'concurrency': concurrencyToYaml(this.concurrency),
+      'continue-on-error': this.continueOnError,
       'if': this.condition?.toYaml(),
       'strategy': strategy,
       'services': undefinedIfEmpty(serviceMap),

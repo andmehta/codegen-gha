@@ -59,3 +59,33 @@ describe('step constructors', () => {
     expect(() => new BashStep({ name: 'x', id: '1st-step', run: bash`true` })).toThrow(/isn't a valid id/);
   });
 });
+
+describe('continue-on-error and timeout-minutes', () => {
+  it.each([
+    ['BashStep', (conf: object) => new BashStep({ name: 'x', run: bash`true`, ...conf })],
+    ['ActionStep', (conf: object) => new ActionStep({ name: 'x', actionSpecifier: 'actions/checkout@v6', params: {}, ...conf })],
+  ])('%s serializes continueOnError and timeoutMinutes', (_, make) => {
+    const step = make({ continueOnError: true, timeoutMinutes: 2 });
+    const yaml = step.toYaml().toString();
+    expect(yaml).toContain('continue-on-error: true');
+    expect(yaml).toContain('timeout-minutes: 2');
+  });
+
+  it.each([
+    ['BashStep', (conf: object) => new BashStep({ name: 'x', run: bash`true`, ...conf })],
+    ['ActionStep', (conf: object) => new ActionStep({ name: 'x', actionSpecifier: 'actions/checkout@v6', params: {}, ...conf })],
+  ])('%s supports a string expression for continueOnError', (_, make) => {
+    const step = make({ continueOnError: '${{ inputs.allow-failure }}' });
+    expect(step.toYaml().toString()).toContain('continue-on-error: ${{ inputs.allow-failure }}');
+  });
+
+  it.each([
+    ['BashStep', (conf: object) => new BashStep({ name: 'x', run: bash`true`, ...conf })],
+    ['ActionStep', (conf: object) => new ActionStep({ name: 'x', actionSpecifier: 'actions/checkout@v6', params: {}, ...conf })],
+  ])('%s omits continue-on-error and timeout-minutes when not provided', (_, make) => {
+    const step = make({});
+    const yaml = step.toYaml().toString();
+    expect(yaml).not.toContain('continue-on-error');
+    expect(yaml).not.toContain('timeout-minutes');
+  });
+});

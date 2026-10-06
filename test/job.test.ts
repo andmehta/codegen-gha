@@ -67,4 +67,25 @@ describe('NormalJob', () => {
 
     expect(job.toYaml().toString()).not.toContain('concurrency:');
   });
+
+  it('serializes continueOnError', () => {
+    const job = new NormalJob({
+      name: 'test',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      continueOnError: true,
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    expect(job.toYaml().toString()).toContain('continue-on-error: true');
+  });
+
+  it('omits continue-on-error when not provided', () => {
+    const job = new NormalJob({
+      name: 'test',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    expect(job.toYaml().toString()).not.toContain('continue-on-error');
+  });
 });
