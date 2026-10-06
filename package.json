@@ -11,7 +11,6 @@
   "scripts": {
     "build": "projen build",
     "bump": "projen bump",
-    "bump:next-version": "projen bump:next-version",
     "bump:releasable-commits": "projen bump:releasable-commits",
     "clobber": "projen clobber",
     "compile": "projen compile",
