@@ -1,6 +1,6 @@
 import YAML from 'yaml';
 
-import { EnvConf, slugify, undefinedIfEmpty } from './common.ts';
+import { Concurrency, concurrencyToYaml, EnvConf, slugify, undefinedIfEmpty } from './common.ts';
 import { NormalJob } from './job.ts';
 
 export type InputType = 'string' | 'boolean' | 'number';
@@ -42,6 +42,7 @@ export interface WorkflowConf {
   env?: EnvConf;
   // inputs: Record<string, Input<any>>;
   permissions: Permissions;
+  concurrency?: Concurrency;
 }
 
 type ReadOrWrite = 'read' | 'write';
@@ -69,15 +70,17 @@ export class Workflow {
   private jobs: Record<string, NormalJob>;
   private env: EnvConf;
   private permissions: Permissions;
+  private concurrency: Concurrency | undefined;
 
   constructor(conf: WorkflowConf) {
-    const { name, trigger, jobs, env = {}, permissions } = conf;
+    const { name, trigger, jobs, env = {}, permissions, concurrency } = conf;
 
     this.name = name;
     this.trigger = trigger;
     this.jobs = jobs;
     this.env = env;
     this.permissions = permissions;
+    this.concurrency = concurrency;
   }
 
   public serialize(header?: string): string {
@@ -89,6 +92,7 @@ export class Workflow {
       {
         name: this.name,
         on: this.trigger,
+        concurrency: concurrencyToYaml(this.concurrency),
         permissions: this.permissions,
         env: undefinedIfEmpty(this.env),
         jobs: jobMap,

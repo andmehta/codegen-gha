@@ -47,4 +47,64 @@ describe('Workflow', () => {
     expect(yaml).not.toContain('services:');
     expect(yaml).not.toContain('timeout-minutes:');
   });
+
+  it('omits concurrency when not provided', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: { pull_request: null },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    expect(workflow.serialize()).not.toContain('concurrency:');
+  });
+
+  it('serializes a literal concurrency block', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: { pull_request: null },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      concurrency: { group: 'ci-${{ github.workflow }}-${{ github.ref }}', cancelInProgress: true },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain('concurrency:');
+    expect(yaml).toContain('group: ci-${{ github.workflow }}-${{ github.ref }}');
+    expect(yaml).toContain('cancel-in-progress: true');
+  });
+
+  it('serializes a concurrency block driven by an expression', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: { pull_request: null },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      concurrency: {
+        group: 'ci-${{ github.workflow }}',
+        cancelInProgress: { expression: "github.event_name == 'pull_request'" },
+      },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain("cancel-in-progress: ${{ github.event_name == 'pull_request' }}");
+  });
 });
