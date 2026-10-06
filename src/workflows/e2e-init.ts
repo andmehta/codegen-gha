@@ -46,7 +46,6 @@ export const e2eInit = new Workflow({
         checkout,
         SETUP_MIN_NODE,
         setupPnpm,
-        new BashStep({ name: 'Show Node.js version', run: bash`node --version` }),
         new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile` }),
         PACK_STEP,
         new BashStep({

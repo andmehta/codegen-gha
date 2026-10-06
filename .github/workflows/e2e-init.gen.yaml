@@ -32,10 +32,6 @@ jobs:
         with:
           cache: true
           install: false
-      - name: Show Node.js version
-        shell: bash
-        run: |-
-          node --version
       - name: Install dependencies
         shell: bash
         run: |-
