@@ -23,12 +23,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      - name: Setup pnpm on the minimum supported Node.js
+      - name: Setup the minimum supported Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.18.0
+      - name: Setup pnpm
         uses: pnpm/setup@v1
         with:
           cache: true
           install: false
-          runtime: node@22.18.0
       - name: Show Node.js version
         shell: bash
         run: |-

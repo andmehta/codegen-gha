@@ -2,7 +2,7 @@ import { bash, ghaTemplateString } from '../components/bash-string.ts';
 import { NormalJob, RUNS_ON } from '../components/job.ts';
 import { ActionStep, BashStep, stepOutput } from '../components/step.ts';
 import { Workflow } from '../components/workflow.ts';
-import { checkout } from '../lib/index.ts';
+import { checkout, setupPnpm } from '../lib/index.ts';
 
 /**
  * Exercises `cgha init` and `cgha generate` the way a user would: from the packed tarball
@@ -12,10 +12,10 @@ import { checkout } from '../lib/index.ts';
 
 // The oldest Node.js `engines` allows, the first with type stripping on by default, so this fails
 // if cgha starts relying on anything newer
-const SETUP_PNPM_ON_MIN_NODE = new ActionStep({
-  name: 'Setup pnpm on the minimum supported Node.js',
-  actionSpecifier: 'pnpm/setup@v1',
-  params: { cache: true, install: false, runtime: 'node@22.18.0' },
+const SETUP_MIN_NODE = new ActionStep({
+  name: 'Setup the minimum supported Node.js',
+  actionSpecifier: 'actions/setup-node@v6',
+  params: { 'node-version': '22.18.0' },
 });
 
 // Outside the checkout, so nothing can resolve through this repo's workspace or node_modules
@@ -44,7 +44,8 @@ export const e2eInit = new Workflow({
       timeoutMinutes: 10,
       steps: [
         checkout,
-        SETUP_PNPM_ON_MIN_NODE,
+        SETUP_MIN_NODE,
+        setupPnpm,
         new BashStep({ name: 'Show Node.js version', run: bash`node --version` }),
         new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile` }),
         PACK_STEP,

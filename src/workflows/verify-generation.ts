@@ -3,7 +3,7 @@ import { IfCondition } from '../components/if-condition.ts';
 import { NormalJob, RUNS_ON } from '../components/job.ts';
 import { ActionStep, BashStep, stepOutput } from '../components/step.ts';
 import { Workflow } from '../components/workflow.ts';
-import { checkout, setupPnpm } from '../lib/index.ts';
+import { checkout, setupNode, setupPnpm } from '../lib/index.ts';
 
 const VERIFY_STEP = new BashStep({
   name: 'Verify generated workflow files are up to date',
@@ -45,6 +45,7 @@ export const verifyGeneration = new Workflow({
       timeoutMinutes: 10,
       steps: [
         checkout,
+        setupNode,
         setupPnpm,
         new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile` }),
         VERIFY_STEP,
