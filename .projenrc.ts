@@ -53,7 +53,7 @@ const project = new typescript.TypeScriptProject({
   gitignore: ['.context/', '/test-reports/'],
   npmIgnoreOptions: {
     // This repo's own generator config, not something consumers need
-    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts', '/codegen-gha.yaml', '/pnpm-workspace.yaml'],
+    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts', '/codegen-gha.yaml', '/pnpm-workspace.yaml', '/workflows/e2e-init.ts'],
   },
 });
 
