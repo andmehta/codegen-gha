@@ -88,4 +88,28 @@ describe('NormalJob', () => {
 
     expect(job.toYaml().toString()).not.toContain('continue-on-error');
   });
+
+  it('serializes defaults.run.working-directory and shell', () => {
+    const job = new NormalJob({
+      name: 'test',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      defaults: { run: { workingDirectory: 'infrastructure/terraform', shell: 'bash' } },
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    const yaml = job.toYaml().toString();
+    expect(yaml).toContain('defaults:');
+    expect(yaml).toContain('working-directory: infrastructure/terraform');
+    expect(yaml).toContain('shell: bash');
+  });
+
+  it('omits defaults when not provided', () => {
+    const job = new NormalJob({
+      name: 'test',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    expect(job.toYaml().toString()).not.toContain('defaults:');
+  });
 });
