@@ -25,6 +25,7 @@ jobs:
         with:
           cache: true
           install: false
+          runtime: node@lts
       - name: Install dependencies
         shell: bash
         run: |-

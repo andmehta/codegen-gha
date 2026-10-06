@@ -23,11 +23,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      - name: Setup pnpm
+      - name: Setup pnpm on the minimum supported Node.js
         uses: pnpm/setup@v1
         with:
           cache: true
           install: false
+          runtime: node@22.18.0
+      - name: Show Node.js version
+        shell: bash
+        run: |-
+          node --version
       - name: Install dependencies
         shell: bash
         run: |-
@@ -113,3 +118,22 @@ jobs:
             echo "::error::cgha generate removed verify-generation.gen.yaml, whose source still exists"
             exit 1
           fi
+      - name: Unsupported TypeScript fails with a hint
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/consumer"
+          cat > workflows/enum.ts <<'EOF'
+          enum Color { Red }
+          export const color = Color.Red;
+          EOF
+
+          if output=$(pnpm exec cgha generate 2>&1); then
+            echo "::error::cgha generate succeeded on a workflow file using an enum"
+            exit 1
+          fi
+          if ! grep -q 'no enums' <<<"$output"; then
+            echo "::error::cgha generate failed without the type stripping hint"
+            echo "$output"
+            exit 1
+          fi
+          rm workflows/enum.ts

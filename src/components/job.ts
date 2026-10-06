@@ -1,10 +1,10 @@
 import YAML from 'yaml';
 
 import { ghaTemplateString } from './bash-string.ts';
-import { Concurrency, concurrencyToYaml, slugify, undefinedIfEmpty } from './common.ts';
+import { type Concurrency, concurrencyToYaml, slugify, undefinedIfEmpty } from './common.ts';
 import type { IfCondition } from './if-condition.ts';
 import { Service } from './service.ts';
-import { StepUnion } from './step.ts';
+import type { StepUnion } from './step.ts';
 import { WorkflowComponent } from './workflow-component.ts';
 
 const RUNS_ON_SPECIFIERS = [

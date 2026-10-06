@@ -1,14 +1,22 @@
 import { bash, ghaTemplateString } from '../components/bash-string.ts';
 import { NormalJob, RUNS_ON } from '../components/job.ts';
-import { BashStep, stepOutput } from '../components/step.ts';
+import { ActionStep, BashStep, stepOutput } from '../components/step.ts';
 import { Workflow } from '../components/workflow.ts';
-import { checkout, setupPnpm } from '../lib/index.ts';
+import { checkout } from '../lib/index.ts';
 
 /**
  * Exercises `cgha init` and `cgha generate` the way a user would: from the packed tarball
  * (the same artifact `npm publish` would upload) installed into an empty project. Checks
  * only what a user can observe, so it shouldn't need to change when the internals do.
  */
+
+// The oldest Node.js `engines` allows, the first with type stripping on by default, so this fails
+// if cgha starts relying on anything newer
+const SETUP_PNPM_ON_MIN_NODE = new ActionStep({
+  name: 'Setup pnpm on the minimum supported Node.js',
+  actionSpecifier: 'pnpm/setup@v1',
+  params: { cache: true, install: false, runtime: 'node@22.18.0' },
+});
 
 // Outside the checkout, so nothing can resolve through this repo's workspace or node_modules
 const CONSUMER_DIR = '"$RUNNER_TEMP/consumer"';
@@ -36,7 +44,8 @@ export const e2eInit = new Workflow({
       timeoutMinutes: 10,
       steps: [
         checkout,
-        setupPnpm,
+        SETUP_PNPM_ON_MIN_NODE,
+        new BashStep({ name: 'Show Node.js version', run: bash`node --version` }),
         new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile` }),
         PACK_STEP,
         new BashStep({
@@ -121,6 +130,27 @@ if [ ! -f .github/workflows/verify-generation.gen.yaml ]; then
   echo "::error::cgha generate removed verify-generation.gen.yaml, whose source still exists"
   exit 1
 fi
+`,
+        }),
+        new BashStep({
+          name: 'Unsupported TypeScript fails with a hint',
+          run: bash`
+cd ${CONSUMER_DIR}
+cat > workflows/enum.ts <<'EOF'
+enum Color { Red }
+export const color = Color.Red;
+EOF
+
+if output=$(pnpm exec cgha generate 2>&1); then
+  echo "::error::cgha generate succeeded on a workflow file using an enum"
+  exit 1
+fi
+if ! grep -q 'no enums' <<<"$output"; then
+  echo "::error::cgha generate failed without the type stripping hint"
+  echo "$output"
+  exit 1
+fi
+rm workflows/enum.ts
 `,
         }),
       ],

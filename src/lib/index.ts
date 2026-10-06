@@ -12,8 +12,10 @@ export const checkout = new ActionStep({
   params: {},
 });
 
+// Installs Node.js too, rather than relying on the runner's preinstalled one. `cgha generate` loads
+// .ts workflow files with Node's built-in type stripping, which needs Node.js 22.18 or later.
 export const setupPnpm = new ActionStep({
   name: 'Setup pnpm',
   actionSpecifier: 'pnpm/setup@v1',
-  params: { cache: true, install: false },
+  params: { cache: true, install: false, runtime: 'node@lts' },
 });

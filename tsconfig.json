@@ -33,7 +33,9 @@
     "moduleResolution": "nodenext",
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true
   },
   "include": [
     "src/**/*.ts"

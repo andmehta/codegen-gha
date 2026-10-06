@@ -19,20 +19,30 @@ npm install --save-dev codegen-gha
 yarn add -D codegen-gha
 ```
 
-Requires Node.js 20.11 or later. The package is ESM-only, so import it with `import`, not `require()`.
+Requires Node.js 22.18 or later. The package is ESM-only, so import it with `import`, not `require()`.
 
 > [!NOTE]
 > `codegen-gha` is pre-1.0. Breaking changes can land in any minor release, so consider pinning the version.
 
-### pnpm 12+
+### TypeScript workflow files
 
-pnpm 12 fails the install until the build script of `esbuild` (pulled in by `tsx`) is approved. Approve it with [`--allow-build`](https://pnpm.io/cli/add#--allow-build):
+`cgha generate` runs `.ts` workflow files with Node's built-in [type stripping](https://nodejs.org/api/typescript.html#type-stripping), so no extra loader is installed. Node only deletes types, so workflow files need to:
 
-```sh
-pnpm add -D codegen-gha --allow-build=esbuild
+- include the extension on relative imports (`'../lib/index.ts'`, not `'../lib/index'`)
+- import types with `import type`
+- avoid `enum`, `namespace` and constructor parameter properties
+
+To have TypeScript flag these for you, enable these options in your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true
+  }
+}
 ```
-
-This saves the approval under [`allowBuilds`](https://pnpm.io/settings/build#allowbuilds) in `pnpm-workspace.yaml`, so later installs don't fail. If an install already failed, run `pnpm approve-builds esbuild` instead.
 
 ## Example
 
