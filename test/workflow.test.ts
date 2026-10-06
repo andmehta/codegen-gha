@@ -107,4 +107,38 @@ describe('Workflow', () => {
     const yaml = workflow.serialize();
     expect(yaml).toContain("cancel-in-progress: ${{ github.event_name == 'pull_request' }}");
   });
+
+  it('serializes paths-ignore, branches-ignore, tags and tags-ignore trigger narrowers', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: {
+        pull_request: {
+          'paths-ignore': ['infrastructure/**', '**/*.md'],
+          'branches-ignore': ['releases/**'],
+        },
+        push: {
+          tags: ['v*'],
+          'tags-ignore': ['v*-beta'],
+        },
+      },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain('paths-ignore:');
+    expect(yaml).toContain('infrastructure/**');
+    expect(yaml).toContain('branches-ignore:');
+    expect(yaml).toContain('releases/**');
+    expect(yaml).toContain('tags:');
+    expect(yaml).toContain('v*');
+    expect(yaml).toContain('tags-ignore:');
+    expect(yaml).toContain('v*-beta');
+  });
 });
