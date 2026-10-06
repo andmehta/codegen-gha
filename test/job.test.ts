@@ -43,4 +43,28 @@ describe('NormalJob', () => {
 
     expect(job.toYaml().toString()).not.toContain('strategy:');
   });
+
+  it('serializes a job-level concurrency block', () => {
+    const job = new NormalJob({
+      name: 'test',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      concurrency: { group: 'test-${{ github.ref }}', cancelInProgress: { expression: "github.event_name == 'pull_request'" } },
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    const yaml = job.toYaml().toString();
+    expect(yaml).toContain('concurrency:');
+    expect(yaml).toContain('group: test-${{ github.ref }}');
+    expect(yaml).toContain("cancel-in-progress: ${{ github.event_name == 'pull_request' }}");
+  });
+
+  it('omits concurrency when not provided', () => {
+    const job = new NormalJob({
+      name: 'test',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    expect(job.toYaml().toString()).not.toContain('concurrency:');
+  });
 });

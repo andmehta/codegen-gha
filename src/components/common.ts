@@ -1,4 +1,33 @@
+import { ghaTemplateString } from './bash-string.ts';
+
 export type EnvConf = Record<string, string>;
+
+export interface ConcurrencyExpression {
+  expression: string;
+}
+
+export interface Concurrency {
+  group: string;
+  cancelInProgress: boolean | ConcurrencyExpression;
+}
+
+function isConcurrencyExpression(value: boolean | ConcurrencyExpression): value is ConcurrencyExpression {
+  return typeof (value as ConcurrencyExpression).expression === 'string';
+}
+
+/**
+ * Builds the plain object GitHub expects for a `concurrency:` block, or undefined if none
+ * was configured, so callers can inline it directly into a YAML.Document without extra checks.
+ */
+export function concurrencyToYaml(concurrency: Concurrency | undefined) {
+  if (!concurrency) return undefined;
+  return {
+    'group': concurrency.group,
+    'cancel-in-progress': isConcurrencyExpression(concurrency.cancelInProgress)
+      ? ghaTemplateString(concurrency.cancelInProgress.expression)
+      : concurrency.cancelInProgress,
+  };
+}
 
 /**
  * Lowercases and collapses every run of characters other than letters, digits, `_` and `-` into

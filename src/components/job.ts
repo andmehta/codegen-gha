@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 
 import { ghaTemplateString } from './bash-string.ts';
-import { undefinedIfEmpty } from './common.ts';
+import { Concurrency, concurrencyToYaml, undefinedIfEmpty } from './common.ts';
 import type { IfCondition } from './if-condition.ts';
 import { Service } from './service.ts';
 import { StepUnion } from './step.ts';
@@ -65,6 +65,7 @@ export interface NormalJobConf {
   strategy?: MatrixStrategy;
   timeoutMinutes?: number;
   env?: Record<string, string>;
+  concurrency?: Concurrency;
 }
 
 export class NormalJob extends WorkflowComponent {
@@ -77,10 +78,11 @@ export class NormalJob extends WorkflowComponent {
   private strategy: MatrixStrategy | undefined;
   private timeoutMinutes: number | undefined;
   private env: Record<string, string>;
+  private concurrency: Concurrency | undefined;
 
   constructor(conf: NormalJobConf) {
     super();
-    const { services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {} } = conf;
+    const { services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {}, concurrency } = conf;
     this.name = name;
     this.needs = needs;
     this.services = services;
@@ -90,6 +92,7 @@ export class NormalJob extends WorkflowComponent {
     this.strategy = strategy;
     this.timeoutMinutes = timeoutMinutes;
     this.env = env;
+    this.concurrency = concurrency;
   }
   public toYaml(): YAML.Document {
     const serviceMap: Record<string, YAML.Document> = {};
@@ -107,6 +110,7 @@ export class NormalJob extends WorkflowComponent {
       'needs': undefinedIfEmpty(this.needs),
       'runs-on': this.runsOn,
       'timeout-minutes': this.timeoutMinutes,
+      'concurrency': concurrencyToYaml(this.concurrency),
       'if': this.condition?.toYaml(),
       'strategy': strategy,
       'services': undefinedIfEmpty(serviceMap),
