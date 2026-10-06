@@ -154,10 +154,10 @@
     },
     "generate": {
       "name": "generate",
-      "description": "Regenerate this repo's own workflow files from src/workflows/ via tsx, no build required",
+      "description": "Regenerate this repo's own workflow files from src/workflows/ via Node's type stripping, no build required",
       "steps": [
         {
-          "exec": "tsx src/cli/index.ts generate"
+          "exec": "node src/cli/index.ts generate"
         }
       ]
     },
@@ -302,7 +302,7 @@
             "--peer",
             "--no-deprecated",
             "--dep=dev,prod,peer,optional",
-            "--filter=@types/yargs,@vitest/coverage-v8,eslint-import-resolver-typescript,eslint-plugin-import,projen,ts-node,vitest,tslib,tsx,yaml,yargs"
+            "--filter=@types/yargs,@vitest/coverage-v8,eslint-import-resolver-typescript,eslint-plugin-import,projen,ts-node,vitest,tslib,yaml,yargs"
           ]
         },
         {
@@ -329,7 +329,6 @@
             "vitest",
             "glob",
             "tslib",
-            "tsx",
             "yaml",
             "yargs"
           ]

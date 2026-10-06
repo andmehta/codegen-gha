@@ -32,7 +32,7 @@ const project = new typescript.TypeScriptProject({
       allowBuilds: { 'unrs-resolver': true, 'esbuild': true },
     },
   },
-  deps: ['tslib', 'yaml', 'glob@^13', 'tsx', 'yargs'], /* Runtime dependencies of this module. */
+  deps: ['tslib', 'yaml', 'glob@^13', 'yargs'], /* Runtime dependencies of this module. */
   bin: {
     cgha: 'lib/cli/index.js',
   },
@@ -59,8 +59,9 @@ const project = new typescript.TypeScriptProject({
 
 project.package.addField('type', 'module');
 // Set directly rather than via `minNodeVersion`, which would also pin every CI job to this exact
-// version (trusted publishing needs a much newer npm). 20.11 is the first with `import.meta.dirname`.
-project.package.addEngine('node', '>=20.11.0');
+// version (trusted publishing needs a much newer npm). 22.18 is the first with type stripping on by
+// default, which `cgha generate` uses to load .ts workflow files.
+project.package.addEngine('node', '>=22.18.0');
 project.package.addField('exports', {
   './package.json': './package.json',
   './*': {
@@ -76,12 +77,16 @@ project.addTask('test:watch', {
   exec: 'vitest',
 });
 project.addTask('generate', {
-  description: "Regenerate this repo's own workflow files from src/workflows/ via tsx, no build required",
-  exec: 'tsx src/cli/index.ts generate',
+  description: "Regenerate this repo's own workflow files from src/workflows/ via Node's type stripping, no build required",
+  exec: 'node src/cli/index.ts generate',
 });
 
 // Rewrites the `.ts` extensions above to `.js` at emit; not yet in projen's typed options.
 project.tsconfig?.file.addOverride('compilerOptions.rewriteRelativeImportExtensions', true);
+// Reject TypeScript that Node's type stripping can't run (enums, namespaces, parameter properties,
+// type imports without `type`), since `cgha generate` and `init`'s templates run .ts files directly.
+project.tsconfig?.file.addOverride('compilerOptions.erasableSyntaxOnly', true);
+project.tsconfig?.file.addOverride('compilerOptions.verbatimModuleSyntax', true);
 
 // `cgha init` reads these real, type-checked source files at runtime and rewrites them into the
 // scaffolded workflows, rather than keeping separate hand-typed copies that can drift from them.

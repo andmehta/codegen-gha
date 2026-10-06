@@ -1,6 +1,6 @@
 import YAML from 'yaml';
 
-import { Concurrency, concurrencyToYaml, EnvConf, slugify, undefinedIfEmpty } from './common.ts';
+import { type Concurrency, concurrencyToYaml, type EnvConf, slugify, undefinedIfEmpty } from './common.ts';
 import { NormalJob } from './job.ts';
 
 export type InputType = 'string' | 'boolean' | 'number';
@@ -60,8 +60,8 @@ interface Permissions {
   'actions': ReadOrWrite;
 }
 
-// A loader that dynamically imports a workflow file (e.g. the CLI's tsx-based loader) may end
-// up executing it in a separate module realm, where `instanceof Workflow` would fail even though
+// The CLI and a workflow file can resolve different copies of this package (e.g. a global `cgha`
+// loading a project that installs its own), where `instanceof Workflow` would fail even though
 // the instance is a "real" Workflow. Symbol.for() is keyed off Node's process-wide symbol
 // registry, so it stays identical across realms and lets callers detect Workflow instances safely.
 export const WORKFLOW_TAG = Symbol.for('codegen-gha.Workflow');

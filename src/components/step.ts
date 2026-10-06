@@ -1,6 +1,6 @@
 import YAML from 'yaml';
 
-import { BashString } from './bash-string.ts';
+import type { BashString } from './bash-string.ts';
 import { slugify, undefinedIfEmpty } from './common.ts';
 import type { IfCondition } from './if-condition.ts';
 import { WorkflowComponent } from './workflow-component.ts';

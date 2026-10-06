@@ -1,6 +1,6 @@
 import YAML from 'yaml';
 
-import { EnvConf } from './common.ts';
+import type { EnvConf } from './common.ts';
 import { WorkflowComponent } from './workflow-component.ts';
 
 export interface ServiceConf {

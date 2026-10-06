@@ -12,6 +12,12 @@ export const checkout = new ActionStep({
   params: {},
 });
 
+export const setupNode = new ActionStep({
+  name: 'Setup Node.js',
+  actionSpecifier: 'actions/setup-node@v6',
+  params: { 'node-version': 'lts/*' },
+});
+
 export const setupPnpm = new ActionStep({
   name: 'Setup pnpm',
   actionSpecifier: 'pnpm/setup@v1',
