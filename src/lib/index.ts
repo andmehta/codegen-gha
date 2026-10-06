@@ -12,8 +12,6 @@ export const checkout = new ActionStep({
   params: {},
 });
 
-// Rather than relying on the runner's preinstalled Node.js: `cgha generate` loads .ts workflow
-// files with Node's built-in type stripping, which needs Node.js 22.18 or later.
 export const setupNode = new ActionStep({
   name: 'Setup Node.js',
   actionSpecifier: 'actions/setup-node@v6',
