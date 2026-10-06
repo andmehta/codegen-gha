@@ -89,3 +89,15 @@ describe('continue-on-error and timeout-minutes', () => {
     expect(yaml).not.toContain('timeout-minutes');
   });
 });
+
+describe('BashStep working-directory', () => {
+  it('serializes working-directory when provided', () => {
+    const step = new BashStep({ name: 'x', run: bash`true`, workingDirectory: 'infrastructure/terraform' });
+    expect(step.toYaml().toString()).toContain('working-directory: infrastructure/terraform');
+  });
+
+  it('omits working-directory when not provided', () => {
+    const step = new BashStep({ name: 'x', run: bash`true` });
+    expect(step.toYaml().toString()).not.toContain('working-directory');
+  });
+});

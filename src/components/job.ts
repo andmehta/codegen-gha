@@ -55,6 +55,13 @@ function isReferenceMatrix(matrix: Matrix): matrix is ReferenceMatrix {
   return typeof (matrix as ReferenceMatrix).expression === 'string';
 }
 
+export interface JobDefaults {
+  run: {
+    workingDirectory?: string;
+    shell?: string;
+  };
+}
+
 export interface NormalJobConf {
   name: string;
   needs?: string[];
@@ -67,6 +74,7 @@ export interface NormalJobConf {
   env?: Record<string, string>;
   concurrency?: Concurrency;
   continueOnError?: boolean | string;
+  defaults?: JobDefaults;
 }
 
 export class NormalJob extends WorkflowComponent {
@@ -81,10 +89,13 @@ export class NormalJob extends WorkflowComponent {
   private env: Record<string, string>;
   private concurrency: Concurrency | undefined;
   private continueOnError: boolean | string | undefined;
+  private defaults: JobDefaults | undefined;
 
   constructor(conf: NormalJobConf) {
     super();
-    const { services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {}, concurrency, continueOnError } = conf;
+    const {
+      services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {}, concurrency, continueOnError, defaults,
+    } = conf;
     this.name = name;
     this.needs = needs;
     this.services = services;
@@ -96,6 +107,7 @@ export class NormalJob extends WorkflowComponent {
     this.env = env;
     this.concurrency = concurrency;
     this.continueOnError = continueOnError;
+    this.defaults = defaults;
   }
   public toYaml(): YAML.Document {
     const serviceMap: Record<string, YAML.Document> = {};
@@ -108,6 +120,12 @@ export class NormalJob extends WorkflowComponent {
         ? ghaTemplateString(this.strategy.matrix.expression)
         : this.strategy.matrix,
     };
+    const defaults = this.defaults && {
+      run: {
+        'working-directory': this.defaults.run.workingDirectory,
+        'shell': this.defaults.run.shell,
+      },
+    };
     return new YAML.Document({
       'name': this.name,
       'needs': undefinedIfEmpty(this.needs),
@@ -117,6 +135,7 @@ export class NormalJob extends WorkflowComponent {
       'continue-on-error': this.continueOnError,
       'if': this.condition?.toYaml(),
       'strategy': strategy,
+      'defaults': defaults,
       'services': undefinedIfEmpty(serviceMap),
       'env': undefinedIfEmpty(this.env),
       'steps': this.steps.map(s => s.toYaml()),

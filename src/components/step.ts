@@ -26,6 +26,7 @@ export interface BashStepConf {
   env?: Record<string, string>;
   continueOnError?: boolean | string;
   timeoutMinutes?: number;
+  workingDirectory?: string;
 }
 export class BashStep extends WorkflowComponent {
   private name: string;
@@ -35,9 +36,10 @@ export class BashStep extends WorkflowComponent {
   private env: Record<string, string> | undefined;
   private continueOnError: boolean | string | undefined;
   private timeoutMinutes: number | undefined;
+  private workingDirectory: string | undefined;
   constructor(conf: BashStepConf) {
     super();
-    const { name, run, id, condition, env, continueOnError, timeoutMinutes } = conf;
+    const { name, run, id, condition, env, continueOnError, timeoutMinutes, workingDirectory } = conf;
     this.name = name;
     this.run = run;
     this.id = toStepId(id);
@@ -45,6 +47,7 @@ export class BashStep extends WorkflowComponent {
     this.env = env;
     this.continueOnError = continueOnError;
     this.timeoutMinutes = timeoutMinutes;
+    this.workingDirectory = workingDirectory;
   }
   toYaml(): YAML.Document {
     const doc = new YAML.Document({
@@ -55,6 +58,7 @@ export class BashStep extends WorkflowComponent {
       'continue-on-error': this.continueOnError,
       'timeout-minutes': this.timeoutMinutes,
       'shell': 'bash',
+      'working-directory': this.workingDirectory,
       // run: this.run,
     });
     const runNode = doc.createNode(this.run);
