@@ -11,8 +11,12 @@ export interface Input<T> {
   default?: T;
 }
 interface WorkflowTriggerNarrowers {
-  paths?: string[];
-  branches?: string[];
+  'paths'?: string[];
+  'paths-ignore'?: string[];
+  'branches'?: string[];
+  'branches-ignore'?: string[];
+  'tags'?: string[];
+  'tags-ignore'?: string[];
 }
 interface Schedule {
   cron: string;
