@@ -26,10 +26,10 @@ const project = new typescript.TypeScriptProject({
   testdir: 'test',
   typescriptVersion: '~6.0.0',
   // pnpm 10+ blocks package build (postinstall) scripts by default, so this allow lists it
-  allowScripts: ['unrs-resolver', 'esbuild'],
+  allowScripts: ['unrs-resolver'],
   pnpmOptions: {
     workspaceYamlOptions: {
-      allowBuilds: { 'unrs-resolver': true, 'esbuild': true },
+      allowBuilds: { 'unrs-resolver': true },
     },
   },
   deps: ['tslib', 'yaml', 'glob@^13', 'yargs'], /* Runtime dependencies of this module. */
@@ -53,7 +53,7 @@ const project = new typescript.TypeScriptProject({
   gitignore: ['.context/', '/test-reports/'],
   npmIgnoreOptions: {
     // This repo's own generator config, not something consumers need
-    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts', '/codegen-gha.yaml', '/pnpm-workspace.yaml', '/workflows/e2e-init.ts'],
+    ignorePatterns: ['/coverage/', '/test-reports/', '/vitest.config.ts', '/codegen-gha.yaml', '/pnpm-workspace.yaml', '/workflows/e2e-init*'],
   },
 });
 

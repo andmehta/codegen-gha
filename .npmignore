@@ -4,7 +4,7 @@
 /vitest.config.ts
 /codegen-gha.yaml
 /pnpm-workspace.yaml
-/workflows/e2e-init.ts
+/workflows/e2e-init*
 /.projen/
 permissions-backup.acl
 /dist/changelog.md
