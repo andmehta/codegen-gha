@@ -36,7 +36,7 @@ interface WorkflowTrigger {
   push?: WorkflowTriggerNarrowers | null;
   workflow_dispatch?: WorkflowCall | null;
   workflow_call?: WorkflowCall;
-  schedule?: Schedule;
+  schedule?: Schedule[];
 }
 
 export interface WorkflowConf {

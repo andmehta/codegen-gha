@@ -141,4 +141,24 @@ describe('Workflow', () => {
     expect(yaml).toContain('tags-ignore:');
     expect(yaml).toContain('v*-beta');
   });
+
+  it('serializes schedule as a sequence of cron entries', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: {
+        schedule: [{ cron: '0 15 * * 1' }, { cron: '0 3 * * *' }],
+      },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain('schedule:\n    - cron: 0 15 * * 1\n    - cron: 0 3 * * *');
+  });
 });
