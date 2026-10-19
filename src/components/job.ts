@@ -22,9 +22,9 @@ const RUNS_ON_SPECIFIERS = [
   // ${{ fromJSON(inputs.weaver-jest-runner) }}
 ] as const;
 
-type RunsOnSpecifier = (typeof RUNS_ON_SPECIFIERS)[number];
+export type RunsOnSpecifier = (typeof RUNS_ON_SPECIFIERS)[number];
 
-export const RUNS_ON: Record<string, RunsOnSpecifier> = {
+export const RUNS_ON = {
   GITHUB_LATEST: 'ubuntu-latest',
   DEPOT_SMALL: 'depot-ubuntu-24.04-small',
   DEPOT_REGULAR: 'depot-ubuntu-24.04',
@@ -35,7 +35,7 @@ export const RUNS_ON: Record<string, RunsOnSpecifier> = {
   SELF_HOSTED_TWO: ['self-hosted', 'linux', 'x64', 'lattice-2core-compute'],
   SELF_HOSTED_EIGHT: ['self-hosted', 'linux', 'x64', 'lattice-8core-general'],
   SELF_HOSTED_DOCKER_POOL: ['self-hosted', 'linux', 'x64', 'docker-hot-cache'],
-} as const;
+} as const satisfies Record<string, RunsOnSpecifier>;
 
 type Scalar = string | number | boolean;
 
