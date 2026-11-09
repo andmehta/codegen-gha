@@ -52,6 +52,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      workflows: write
     if: ${{ needs.upgrade.outputs.patch_created }}
     steps:
       - name: Checkout
