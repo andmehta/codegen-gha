@@ -103,18 +103,13 @@ describe('BashStep working-directory', () => {
 });
 
 describe('BashStep shell', () => {
-  it('defaults to shell: bash', () => {
+  it('omits the shell key when not provided, falling back to job defaults', () => {
     const step = new BashStep({ name: 'x', run: bash`true` });
-    expect(step.toYaml().toString()).toContain('shell: bash');
+    expect(step.toYaml().toString()).not.toContain('shell');
   });
 
-  it('overrides the shell when a string is provided', () => {
+  it('serializes shell when provided', () => {
     const step = new BashStep({ name: 'x', run: bash`true`, shell: 'sh' });
     expect(step.toYaml().toString()).toContain('shell: sh');
-  });
-
-  it('omits the shell key when shell is false, falling back to job defaults', () => {
-    const step = new BashStep({ name: 'x', run: bash`true`, shell: false });
-    expect(step.toYaml().toString()).not.toContain('shell');
   });
 });

@@ -18,6 +18,9 @@ export function toStepId(id: string | undefined): string | undefined {
   return slug;
 }
 
+/** A shell GitHub Actions runners support natively for `shell:`. */
+export type Shell = 'bash' | 'pwsh' | 'python' | 'sh' | 'cmd' | 'powershell';
+
 export interface BashStepConf {
   name: string;
   run: BashString;
@@ -27,12 +30,8 @@ export interface BashStepConf {
   continueOnError?: boolean | string;
   timeoutMinutes?: number;
   workingDirectory?: string;
-  /**
-   * Shell to run the script with. Defaults to `bash`. Pass `false` to omit the `shell:` key
-   * entirely, so the step falls back to the job's `defaults.run.shell` (or GitHub's own
-   * default of `bash -e {0}`, without `pipefail`).
-   */
-  shell?: string | false;
+  /** Omit to fall back to the job's `defaults.run.shell`, or GitHub's own default of `bash -e {0}`. */
+  shell?: Shell;
 }
 export class BashStep extends WorkflowComponent {
   private name: string;
@@ -43,7 +42,7 @@ export class BashStep extends WorkflowComponent {
   private continueOnError: boolean | string | undefined;
   private timeoutMinutes: number | undefined;
   private workingDirectory: string | undefined;
-  private shell: string | false;
+  private shell: Shell | undefined;
   constructor(conf: BashStepConf) {
     super();
     const { name, run, id, condition, env, continueOnError, timeoutMinutes, workingDirectory, shell } = conf;
@@ -55,7 +54,7 @@ export class BashStep extends WorkflowComponent {
     this.continueOnError = continueOnError;
     this.timeoutMinutes = timeoutMinutes;
     this.workingDirectory = workingDirectory;
-    this.shell = shell ?? 'bash';
+    this.shell = shell;
   }
   toYaml(): YAML.Document {
     const doc = new YAML.Document({
@@ -65,7 +64,7 @@ export class BashStep extends WorkflowComponent {
       'env': undefinedIfEmpty(this.env),
       'continue-on-error': this.continueOnError,
       'timeout-minutes': this.timeoutMinutes,
-      'shell': this.shell === false ? undefined : this.shell,
+      'shell': this.shell,
       'working-directory': this.workingDirectory,
       // run: this.run,
     });
