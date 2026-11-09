@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { bash } from '../src/components/bash-string.ts';
-import { jobOutput, NormalJob, RUNS_ON } from '../src/components/job.ts';
+import { IfCondition } from '../src/components/if-condition.ts';
+import { jobOutput, jobOutputValue, NormalJob, RUNS_ON, WorkflowCallJob } from '../src/components/job.ts';
 import { BashStep } from '../src/components/step.ts';
 
 describe('NormalJob', () => {
@@ -214,5 +215,89 @@ describe('jobOutput', () => {
     });
 
     expect(() => jobOutput(job, 'web')).toThrow("Cannot reference output 'web' of a job with no id");
+  });
+
+  it('references a WorkflowCallJob\'s output by id', () => {
+    const job = new WorkflowCallJob({ id: 'detect', workflowSpecifier: './.github/workflows/detect.gen.yaml' });
+
+    expect(jobOutput(job, 'web')).toBe('needs.detect.outputs.web');
+  });
+});
+
+describe('jobOutputValue', () => {
+  it('builds a standalone jobs.<id>.outputs.<key> expression', () => {
+    const job = new NormalJob({
+      id: 'detect',
+      name: 'detect',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    expect(jobOutputValue(job, 'web')).toBe('${{ jobs.detect.outputs.web }}');
+  });
+
+  it('throws when referencing the output of a job with no id', () => {
+    const job = new NormalJob({
+      name: 'detect',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    expect(() => jobOutputValue(job, 'web')).toThrow("Cannot reference output 'web' of a job with no id");
+  });
+});
+
+describe('WorkflowCallJob', () => {
+  it('serializes a minimal call with only a workflow specifier', () => {
+    const job = new WorkflowCallJob({ workflowSpecifier: './.github/workflows/detect.gen.yaml' });
+
+    const yaml = job.toYaml().toString();
+    expect(yaml).toContain('uses: ./.github/workflows/detect.gen.yaml');
+    expect(yaml).not.toContain('name:');
+    expect(yaml).not.toContain('if:');
+    expect(yaml).not.toContain('needs:');
+    expect(yaml).not.toContain('with:');
+    expect(yaml).not.toContain('secrets:');
+  });
+
+  it('omits secrets by default', () => {
+    const job = new WorkflowCallJob({ workflowSpecifier: './.github/workflows/detect.gen.yaml' });
+
+    expect(job.toYaml().toString()).not.toContain('secrets:');
+  });
+
+  it('serializes secrets: inherit when requested', () => {
+    const job = new WorkflowCallJob({ workflowSpecifier: './.github/workflows/detect.gen.yaml', secrets: 'inherit' });
+
+    expect(job.toYaml().toString()).toContain('secrets: inherit');
+  });
+
+  it('serializes an explicit secrets map', () => {
+    const job = new WorkflowCallJob({
+      workflowSpecifier: './.github/workflows/detect.gen.yaml',
+      secrets: { TOKEN: '${{ secrets.TOKEN }}' },
+    });
+
+    const yaml = job.toYaml().toString();
+    expect(yaml).toContain('secrets:');
+    expect(yaml).toContain('TOKEN: ${{ secrets.TOKEN }}');
+  });
+
+  it('serializes name, needs, condition and params when provided', () => {
+    const job = new WorkflowCallJob({
+      name: 'Detect changes',
+      needs: ['setup'],
+      condition: IfCondition.isPullRequest(),
+      workflowSpecifier: './.github/workflows/detect.gen.yaml',
+      params: { ref: '${{ github.sha }}' },
+    });
+
+    const yaml = job.toYaml().toString();
+    expect(yaml).toContain('name: Detect changes');
+    expect(yaml).toContain('needs:');
+    expect(yaml).toContain('- setup');
+    expect(yaml).toContain("if: ${{ github.event_name == 'pull_request' }}");
+    expect(yaml).toContain('with:');
+    expect(yaml).toContain('ref:');
   });
 });

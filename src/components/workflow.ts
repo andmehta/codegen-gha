@@ -1,7 +1,7 @@
 import YAML from 'yaml';
 
 import { type Concurrency, concurrencyToYaml, type EnvConf, slugify, undefinedIfEmpty } from './common.ts';
-import { NormalJob } from './job.ts';
+import { NormalJob, type WorkflowCallJob } from './job.ts';
 
 export type InputType = 'string' | 'boolean' | 'number';
 
@@ -40,9 +40,14 @@ interface Schedule {
 interface Secret {
   required: boolean;
 }
+export interface WorkflowOutput {
+  description?: string;
+  value: string;
+}
 interface WorkflowCall {
-  inputs: Record<string, Input<any>>;
-  secrets: Record<string, Secret>;
+  inputs?: Record<string, Input<any>>;
+  secrets?: Record<string, Secret>;
+  outputs?: Record<string, WorkflowOutput>;
 }
 
 interface WorkflowDispatch {
@@ -63,7 +68,7 @@ interface WorkflowTrigger {
 export interface WorkflowConf {
   name: string;
   trigger: WorkflowTrigger;
-  jobs: Record<string, NormalJob>;
+  jobs: Record<string, NormalJob | WorkflowCallJob>;
   env?: EnvConf;
   // inputs: Record<string, Input<any>>;
   permissions: Permissions;
@@ -92,7 +97,7 @@ export class Workflow {
 
   private name: string;
   private trigger: WorkflowTrigger;
-  private jobs: Record<string, NormalJob>;
+  private jobs: Record<string, NormalJob | WorkflowCallJob>;
   private env: EnvConf;
   private permissions: Permissions;
   private concurrency: Concurrency | undefined;
