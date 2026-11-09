@@ -109,4 +109,9 @@ releaseWorkflow?.file?.addOverride('jobs.release_npm.steps.3.run', [
   'done',
 ].join('\n'));
 
+// GitHub rejects GITHUB_TOKEN pushes that touch .github/workflows/ without `workflows: write`,
+// a permission projen's JobPermissions type doesn't expose.
+const upgradeWorkflow = project.github?.tryFindWorkflow('upgrade-main');
+upgradeWorkflow?.file?.addOverride('jobs.pr.permissions.workflows', 'write');
+
 project.synth();
