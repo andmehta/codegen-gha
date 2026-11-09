@@ -10,9 +10,9 @@ const project = new typescript.TypeScriptProject({
   npmProvenance: true,
   packageManager: javascript.NodePackageManager.PNPM,
   githubOptions: {
-    // Use the default GITHUB_TOKEN instead of requiring a PROJEN_GITHUB_TOKEN PAT secret.
-    // Note: pushes made with GITHUB_TOKEN don't re-trigger other workflows.
-    projenCredentials: github.GithubCredentials.fromPersonalAccessToken({ secret: 'GITHUB_TOKEN' }),
+    // A PAT (not the default GITHUB_TOKEN) is required so self-mutation pushes can touch
+    // .github/workflows/ and so those pushes re-trigger other workflows.
+    projenCredentials: github.GithubCredentials.fromPersonalAccessToken({ secret: 'PROJEN_GITHUB_TOKEN' }),
     pullRequestLintOptions: {
       semanticTitleOptions: {
         types: ['feat', 'fix', 'chore', 'docs', 'refactor'],
@@ -108,10 +108,5 @@ releaseWorkflow?.file?.addOverride('jobs.release_npm.steps.3.run', [
   '  fi',
   'done',
 ].join('\n'));
-
-// GitHub rejects GITHUB_TOKEN pushes that touch .github/workflows/ without `workflows: write`,
-// a permission projen's JobPermissions type doesn't expose.
-const upgradeWorkflow = project.github?.tryFindWorkflow('upgrade-main');
-upgradeWorkflow?.file?.addOverride('jobs.pr.permissions.workflows', 'write');
 
 project.synth();
