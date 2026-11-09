@@ -5,11 +5,27 @@ import { NormalJob } from './job.ts';
 
 export type InputType = 'string' | 'boolean' | 'number';
 
-export interface Input<T> {
-  type: InputType;
+interface InputBase<T> {
+  description?: string;
   required: boolean;
   default?: T;
 }
+
+export interface Input<T> extends InputBase<T> {
+  type: InputType;
+}
+
+export interface ChoiceInput extends InputBase<string> {
+  type: 'choice';
+  options: string[];
+}
+
+export interface EnvironmentInput extends InputBase<string> {
+  type: 'environment';
+}
+
+export type DispatchInput = Input<any> | ChoiceInput | EnvironmentInput;
+
 interface WorkflowTriggerNarrowers {
   'paths'?: string[];
   'paths-ignore'?: string[];
@@ -29,12 +45,16 @@ interface WorkflowCall {
   secrets: Record<string, Secret>;
 }
 
+interface WorkflowDispatch {
+  inputs?: Record<string, DispatchInput>;
+}
+
 interface WorkflowTrigger {
   merge_queue?: WorkflowTriggerNarrowers | null;
   pull_request?: WorkflowTriggerNarrowers | null;
   merge_group?: WorkflowTriggerNarrowers | null;
   push?: WorkflowTriggerNarrowers | null;
-  workflow_dispatch?: WorkflowCall | null;
+  workflow_dispatch?: WorkflowDispatch | null;
   workflow_call?: WorkflowCall;
   schedule?: Schedule[];
   repository_dispatch?: { types?: string[] } | null;
