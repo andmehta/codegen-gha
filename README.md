@@ -145,4 +145,6 @@ PR titles are checked for a semantic type prefix (e.g. `feat: ...`, `fix: ...`, 
 
 Releases are automated. Every merge to `main` runs [`release.yml`](.github/workflows/release.yml), which bumps the version from the conventional commit history, tags it, and creates a GitHub Release with the changelog. Release only _stages_ on [npm](https://www.npmjs.com/package/codegen-gha).
 
+The project is pre-1.0, so the usual major bump for breaking changes is demoted to a minor bump instead. Mark a breaking change with `!` after the type (`feat!: ...`) or a `BREAKING CHANGE:` footer, or it'll be released as a patch like any other fix or feature.
+
 A staged version isn't installable until a maintainer approves it. Please reach out if a release needs to be available.
