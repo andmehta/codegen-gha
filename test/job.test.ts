@@ -34,6 +34,40 @@ describe('NormalJob', () => {
     expect(yaml).toContain('matrix: ${{ fromJSON(inputs.matrix) }}');
   });
 
+  it('serializes a matrix with a per-key expression alongside raw values', () => {
+    const job = new NormalJob({
+      name: 'test',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      strategy: {
+        failFast: true,
+        matrix: {
+          package: { expression: 'fromJson(needs.detect-changes.outputs.packages)' },
+          os: ['ubuntu-latest'],
+        },
+      },
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    const yaml = job.toYaml().toString();
+    expect(yaml).toContain('strategy:');
+    expect(yaml).toContain('package: ${{ fromJson(needs.detect-changes.outputs.packages) }}');
+    expect(yaml).toContain('os:');
+    expect(yaml).toContain('- ubuntu-latest');
+  });
+
+  it('omits fail-fast when not provided, leaving GitHub default behavior', () => {
+    const job = new NormalJob({
+      name: 'test',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      strategy: { matrix: { module: ['gcp', 'cloudflare'] } },
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    const yaml = job.toYaml().toString();
+    expect(yaml).toContain('strategy:');
+    expect(yaml).not.toContain('fail-fast');
+  });
+
   it('omits strategy when not provided', () => {
     const job = new NormalJob({
       name: 'test',

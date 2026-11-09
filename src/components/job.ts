@@ -39,20 +39,22 @@ export const RUNS_ON = {
 
 type Scalar = string | number | boolean;
 
-export type RawMatrix = Record<string, Scalar[]>;
 export interface ReferenceMatrix {
   expression: string;
 }
 
+export type MatrixValue = Scalar[] | ReferenceMatrix;
+export type RawMatrix = Record<string, MatrixValue>;
+
 export type Matrix = RawMatrix | ReferenceMatrix;
 
 export interface MatrixStrategy {
-  failFast: boolean;
+  failFast?: boolean;
   matrix: Matrix;
 }
 
-function isReferenceMatrix(matrix: Matrix): matrix is ReferenceMatrix {
-  return typeof (matrix as ReferenceMatrix).expression === 'string';
+function isReferenceMatrix(value: Matrix | MatrixValue): value is ReferenceMatrix {
+  return typeof (value as ReferenceMatrix).expression === 'string';
 }
 
 export interface JobDefaults {
@@ -143,7 +145,12 @@ export class NormalJob extends WorkflowComponent {
       'fail-fast': this.strategy.failFast,
       'matrix': isReferenceMatrix(this.strategy.matrix)
         ? ghaTemplateString(this.strategy.matrix.expression)
-        : this.strategy.matrix,
+        : Object.fromEntries(
+          Object.entries(this.strategy.matrix).map(([key, value]) => [
+            key,
+            isReferenceMatrix(value) ? ghaTemplateString(value.expression) : value,
+          ]),
+        ),
     };
     const defaults = this.defaults && {
       run: {
