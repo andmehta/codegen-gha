@@ -161,4 +161,44 @@ describe('Workflow', () => {
     const yaml = workflow.serialize();
     expect(yaml).toContain('schedule:\n    - cron: 0 15 * * 1\n    - cron: 0 3 * * *');
   });
+
+  it('serializes repository_dispatch types', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: {
+        repository_dispatch: { types: ['my-event', 'other-event'] },
+      },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain('repository_dispatch:\n    types:\n      - my-event\n      - other-event');
+  });
+
+  it('serializes repository_dispatch with no types', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: {
+        repository_dispatch: null,
+      },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain('repository_dispatch:');
+  });
 });

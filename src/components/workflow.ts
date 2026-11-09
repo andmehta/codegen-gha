@@ -37,6 +37,7 @@ interface WorkflowTrigger {
   workflow_dispatch?: WorkflowCall | null;
   workflow_call?: WorkflowCall;
   schedule?: Schedule[];
+  repository_dispatch?: { types?: string[] } | null;
 }
 
 export interface WorkflowConf {
