@@ -30,10 +30,12 @@ jobs:
           cache: true
           install: false
       - name: Install dependencies
+        shell: bash
         run: |-
           pnpm install --frozen-lockfile
       - name: Verify generated workflow files are up to date
         id: verify
+        shell: bash
         run: |
           pnpm run generate
 
@@ -53,6 +55,7 @@ jobs:
         if: ${{ steps.verify.outputs.diff != '' }}
         env:
           DIFF: ${{ steps.verify.outputs.diff }}
+        shell: bash
         run: |
           {
             cat <<'EOF'
@@ -89,5 +92,6 @@ jobs:
           hide_classify: RESOLVED
       - name: Fail Job if we did not generate everything
         if: ${{ steps.verify.outputs.diff != '' }}
+        shell: bash
         run: |-
           exit 1

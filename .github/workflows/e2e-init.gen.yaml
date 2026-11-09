@@ -33,10 +33,12 @@ jobs:
           cache: true
           install: false
       - name: Install dependencies
+        shell: bash
         run: |-
           pnpm install --frozen-lockfile
       - name: Pack codegen-gha
         id: pack
+        shell: bash
         run: |
           pnpm compile
           pnpm post-compile
@@ -45,12 +47,14 @@ jobs:
       - name: Install the tarball into an empty project
         env:
           TARBALL: ${{ steps.pack.outputs.tarball }}
+        shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/consumer"
           cd "$RUNNER_TEMP/consumer"
           pnpm init
           pnpm add "$TARBALL"
       - name: cgha init writes the starter files
+        shell: bash
         run: |
           cd "$RUNNER_TEMP/consumer"
           pnpm exec cgha init
@@ -62,6 +66,7 @@ jobs:
             fi
           done
       - name: cgha generate writes workflows from them
+        shell: bash
         run: |
           cd "$RUNNER_TEMP/consumer"
           pnpm exec cgha generate
@@ -73,11 +78,13 @@ jobs:
             fi
           done
       - name: Generated workflows pass actionlint
+        shell: bash
         run: |
           cd "$RUNNER_TEMP/consumer"
           bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
           ./actionlint .github/workflows/*.gen.yaml
       - name: Regenerating is a no-op
+        shell: bash
         run: |
           cd "$RUNNER_TEMP/consumer"
           echo node_modules > .gitignore
@@ -95,6 +102,7 @@ jobs:
             exit 1
           fi
       - name: Deleting a workflow source removes its generated file
+        shell: bash
         run: |
           cd "$RUNNER_TEMP/consumer"
           rm workflows/example.ts
@@ -110,6 +118,7 @@ jobs:
             exit 1
           fi
       - name: Unsupported TypeScript fails with a hint
+        shell: bash
         run: |
           cd "$RUNNER_TEMP/consumer"
           cat > workflows/enum.ts <<'EOF'

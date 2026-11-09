@@ -24,6 +24,7 @@ if [ -n "$diff" ]; then
   echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
 fi
 `,
+  shell: 'bash',
 });
 
 const HAS_DIFF = IfCondition.stepOutputNotNull(VERIFY_STEP, 'diff');
@@ -47,7 +48,7 @@ export const verifyGeneration = new Workflow({
         checkout,
         setupNode,
         setupPnpm,
-        new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile` }),
+        new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile`, shell: 'bash' }),
         VERIFY_STEP,
         new BashStep({
           name: 'Post diff to job summary',
@@ -66,6 +67,7 @@ EOF
   echo '\`\`\`'
 } >> "$GITHUB_STEP_SUMMARY"
 `,
+          shell: 'bash',
         }),
         new ActionStep({
           name: 'Comment diff on PR',
@@ -103,6 +105,7 @@ EOF
           name: 'Fail Job if we did not generate everything',
           condition: HAS_DIFF,
           run: bash`exit 1`,
+          shell: 'bash',
         }),
       ],
     }),
