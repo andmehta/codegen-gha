@@ -135,6 +135,29 @@ describe('NormalJob', () => {
 
     expect(job.toYaml().toString()).not.toContain('outputs:');
   });
+
+  it('serializes job-level permissions', () => {
+    const job = new NormalJob({
+      name: 'comment-on-pr',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'write', 'checks': 'read', 'actions': 'read' },
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    const yaml = job.toYaml().toString();
+    expect(yaml).toContain('permissions:');
+    expect(yaml).toContain('pull-requests: write');
+  });
+
+  it('omits permissions when not provided', () => {
+    const job = new NormalJob({
+      name: 'test',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+
+    expect(job.toYaml().toString()).not.toContain('permissions:');
+  });
 });
 
 describe('jobOutput', () => {

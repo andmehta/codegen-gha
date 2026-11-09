@@ -6,6 +6,7 @@ import type { IfCondition } from './if-condition.ts';
 import { Service } from './service.ts';
 import type { StepUnion } from './step.ts';
 import { WorkflowComponent } from './workflow-component.ts';
+import type { Permissions } from './workflow.ts';
 
 const RUNS_ON_SPECIFIERS = [
   'ubuntu-latest',
@@ -95,6 +96,7 @@ export interface NormalJobConf {
   concurrency?: Concurrency;
   continueOnError?: boolean | string;
   defaults?: JobDefaults;
+  permissions?: Permissions;
 }
 
 export class NormalJob extends WorkflowComponent {
@@ -112,12 +114,13 @@ export class NormalJob extends WorkflowComponent {
   private concurrency: Concurrency | undefined;
   private continueOnError: boolean | string | undefined;
   private defaults: JobDefaults | undefined;
+  private permissions: Permissions | undefined;
 
   constructor(conf: NormalJobConf) {
     super();
     const {
       id, services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {}, outputs = {},
-      concurrency, continueOnError, defaults,
+      concurrency, continueOnError, defaults, permissions,
     } = conf;
     this.id = toJobId(id);
     this.name = name;
@@ -133,6 +136,7 @@ export class NormalJob extends WorkflowComponent {
     this.concurrency = concurrency;
     this.continueOnError = continueOnError;
     this.defaults = defaults;
+    this.permissions = permissions;
   }
   public toYaml(): YAML.Document {
     const serviceMap: Record<string, YAML.Document> = {};
@@ -155,6 +159,7 @@ export class NormalJob extends WorkflowComponent {
       'name': this.name,
       'needs': undefinedIfEmpty(this.needs),
       'runs-on': this.runsOn,
+      'permissions': this.permissions,
       'timeout-minutes': this.timeoutMinutes,
       'concurrency': concurrencyToYaml(this.concurrency),
       'continue-on-error': this.continueOnError,
