@@ -30,6 +30,7 @@ pnpm post-compile
 pnpm package
 echo "tarball=$(ls "$PWD"/dist/js/codegen-gha-*.tgz)" >> "$GITHUB_OUTPUT"
 `,
+  shell: 'bash',
 });
 
 export const e2eInit = new Workflow({
@@ -46,7 +47,7 @@ export const e2eInit = new Workflow({
         checkout,
         SETUP_MIN_NODE,
         setupPnpm,
-        new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile` }),
+        new BashStep({ name: 'Install dependencies', run: bash`pnpm install --frozen-lockfile`, shell: 'bash' }),
         PACK_STEP,
         new BashStep({
           name: 'Install the tarball into an empty project',
@@ -57,6 +58,7 @@ cd ${CONSUMER_DIR}
 pnpm init
 pnpm add "$TARBALL"
 `,
+          shell: 'bash',
         }),
         new BashStep({
           name: 'cgha init writes the starter files',
@@ -71,6 +73,7 @@ for f in codegen-gha.yaml workflows/example.ts workflows/verify-generation.ts li
   fi
 done
 `,
+          shell: 'bash',
         }),
         new BashStep({
           name: 'cgha generate writes workflows from them',
@@ -85,6 +88,7 @@ for f in .github/workflows/example.gen.yaml .github/workflows/verify-generation.
   fi
 done
 `,
+          shell: 'bash',
         }),
         new BashStep({
           name: 'Generated workflows pass actionlint',
@@ -93,6 +97,7 @@ cd ${CONSUMER_DIR}
 bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
 ./actionlint .github/workflows/*.gen.yaml
 `,
+          shell: 'bash',
         }),
         new BashStep({
           name: 'Regenerating is a no-op',
@@ -113,6 +118,7 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 `,
+          shell: 'bash',
         }),
         new BashStep({
           name: 'Deleting a workflow source removes its generated file',
@@ -131,6 +137,7 @@ if [ ! -f .github/workflows/verify-generation.gen.yaml ]; then
   exit 1
 fi
 `,
+          shell: 'bash',
         }),
         new BashStep({
           name: 'Unsupported TypeScript fails with a hint',
@@ -152,6 +159,7 @@ if ! grep -q 'no enums' <<<"$output"; then
 fi
 rm workflows/enum.ts
 `,
+          shell: 'bash',
         }),
       ],
     }),

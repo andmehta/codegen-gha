@@ -86,7 +86,6 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Run tests
-        shell: bash
         run: |-
           pnpm test
 ```

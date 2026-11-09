@@ -101,3 +101,15 @@ describe('BashStep working-directory', () => {
     expect(step.toYaml().toString()).not.toContain('working-directory');
   });
 });
+
+describe('BashStep shell', () => {
+  it('omits the shell key when not provided, falling back to job defaults', () => {
+    const step = new BashStep({ name: 'x', run: bash`true` });
+    expect(step.toYaml().toString()).not.toContain('shell');
+  });
+
+  it('serializes shell when provided', () => {
+    const step = new BashStep({ name: 'x', run: bash`true`, shell: 'sh' });
+    expect(step.toYaml().toString()).toContain('shell: sh');
+  });
+});
