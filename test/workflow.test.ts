@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bash } from '../src/components/bash-string.ts';
-import { NormalJob, RUNS_ON } from '../src/components/job.ts';
+import { jobOutputValue, NormalJob, RUNS_ON, WorkflowCallJob } from '../src/components/job.ts';
 import { BashStep } from '../src/components/step.ts';
 import { Workflow } from '../src/components/workflow.ts';
 
@@ -200,5 +200,52 @@ describe('Workflow', () => {
 
     const yaml = workflow.serialize();
     expect(yaml).toContain('repository_dispatch:');
+  });
+
+  it('serializes workflow_call with only outputs, omitting inputs and secrets', () => {
+    const detect = new NormalJob({
+      id: 'detect',
+      name: 'detect',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      outputs: { changed: '${{ steps.affected.outputs.changed }}' },
+      steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+    });
+    const workflow = new Workflow({
+      name: 'Detect changes',
+      trigger: {
+        workflow_call: { outputs: { 'changed-packages': { description: 'JSON list of affected packages', value: jobOutputValue(detect, 'changed') } } },
+      },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: { detect },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain('workflow_call:');
+    expect(yaml).toContain('changed-packages:');
+    expect(yaml).toContain('description: JSON list of affected packages');
+    expect(yaml).toContain('value: ${{ jobs.detect.outputs.changed }}');
+    expect(yaml).not.toContain('inputs:');
+    expect(yaml).not.toContain('secrets:');
+  });
+
+  it('serializes a WorkflowCallJob in the jobs map', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: { push: { branches: ['main'] } },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: {
+        'detect-changes': new WorkflowCallJob({ workflowSpecifier: './.github/workflows/detect-changes.gen.yaml' }),
+        'test': new NormalJob({
+          name: 'test',
+          needs: ['detect-changes'],
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain('detect-changes:');
+    expect(yaml).toContain('uses: ./.github/workflows/detect-changes.gen.yaml');
   });
 });

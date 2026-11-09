@@ -181,50 +181,69 @@ export class NormalJob extends WorkflowComponent {
   }
 }
 
-/**
- * Reference to another job's output, e.g. `needs.detect.outputs.web`.
- * GitHub can only address a job's outputs through its id, so the job must have one that
- * matches its key in the workflow's `jobs` map.
- */
-export function jobOutput(job: NormalJob, outputKey: string): string {
+function jobOutputReference(job: NormalJob | WorkflowCallJob, outputKey: string): string {
   if (!job.id) {
     throw new Error(`Cannot reference output '${outputKey}' of a job with no id`);
   }
-  return `needs.${job.id}.outputs.${outputKey}`;
+  return `${job.id}.outputs.${outputKey}`;
+}
+
+/**
+ * Reference to another job's output, e.g. `needs.detect.outputs.web`, for composing into a
+ * larger expression such as an `if:` condition. GitHub can only address a job's outputs through
+ * its id, so the job must have one that matches its key in the workflow's `jobs` map.
+ */
+export function jobOutput(job: NormalJob | WorkflowCallJob, outputKey: string): string {
+  return `needs.${jobOutputReference(job, outputKey)}`;
+}
+
+/**
+ * Standalone `${{ jobs.<id>.outputs.<key> }}` expression for a `workflow_call` trigger's
+ * `outputs.<name>.value`, which addresses the job directly by id rather than through `needs`.
+ */
+export function jobOutputValue(job: NormalJob | WorkflowCallJob, outputKey: string): string {
+  return ghaTemplateString(`jobs.${jobOutputReference(job, outputKey)}`);
 }
 
 type WorkflowSpecifier = `./.github/workflows/${string}`;
 
-interface WorkflowCallConf {
-  name: string;
-  needs: string[];
+export type WorkflowCallSecrets = 'inherit' | Record<string, string>;
+
+export interface WorkflowCallConf {
+  id?: string;
+  name?: string;
+  needs?: string[];
   workflowSpecifier: WorkflowSpecifier;
-  params: Record<string, any>;
-  condition: IfCondition;
+  params?: Record<string, any>;
+  condition?: IfCondition;
+  secrets?: WorkflowCallSecrets;
 }
 
 export class WorkflowCallJob extends WorkflowComponent {
-  private name: string;
+  public readonly id: string | undefined;
+  private name: string | undefined;
   private workflowSpecifier: WorkflowSpecifier;
   private params: Record<string, any>;
-  private condition: IfCondition;
+  private condition: IfCondition | undefined;
   private needs: string[];
+  private secrets: WorkflowCallSecrets | undefined;
 
   constructor(conf: WorkflowCallConf) {
     super();
-    const { name, needs, condition, workflowSpecifier, params } = conf;
+    const { id, name, needs = [], condition, workflowSpecifier, params = {}, secrets } = conf;
+    this.id = toJobId(id);
     this.name = name;
     this.needs = needs;
     this.workflowSpecifier = workflowSpecifier;
     this.condition = condition;
     this.params = params;
+    this.secrets = secrets;
   }
   public override toYaml(): YAML.Document {
     return new YAML.Document({
       name: this.name,
-      // We so far don't have a use case for any other config setting for secrets
-      secrets: 'inherit',
-      if: this.condition.toYaml(),
+      secrets: this.secrets,
+      if: this.condition?.toYaml(),
       needs: undefinedIfEmpty(this.needs),
       uses: this.workflowSpecifier,
       with: undefinedIfEmpty(this.params),
