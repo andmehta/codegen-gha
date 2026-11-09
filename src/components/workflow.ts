@@ -5,11 +5,27 @@ import { NormalJob, type WorkflowCallJob } from './job.ts';
 
 export type InputType = 'string' | 'boolean' | 'number';
 
-export interface Input<T> {
-  type: InputType;
+interface InputBase<T> {
+  description?: string;
   required: boolean;
   default?: T;
 }
+
+export interface Input<T> extends InputBase<T> {
+  type: InputType;
+}
+
+export interface ChoiceInput extends InputBase<string> {
+  type: 'choice';
+  options: string[];
+}
+
+export interface EnvironmentInput extends InputBase<string> {
+  type: 'environment';
+}
+
+export type DispatchInput = Input<any> | ChoiceInput | EnvironmentInput;
+
 interface WorkflowTriggerNarrowers {
   'paths'?: string[];
   'paths-ignore'?: string[];
@@ -24,16 +40,18 @@ interface Schedule {
 interface Secret {
   required: boolean;
 }
-interface WorkflowDispatchOrCall {
-  inputs?: Record<string, Input<any>>;
-  secrets?: Record<string, Secret>;
-}
 export interface WorkflowOutput {
   description?: string;
   value: string;
 }
-interface WorkflowCall extends WorkflowDispatchOrCall {
+interface WorkflowCall {
+  inputs?: Record<string, Input<any>>;
+  secrets?: Record<string, Secret>;
   outputs?: Record<string, WorkflowOutput>;
+}
+
+interface WorkflowDispatch {
+  inputs?: Record<string, DispatchInput>;
 }
 
 interface WorkflowTrigger {
@@ -41,7 +59,7 @@ interface WorkflowTrigger {
   pull_request?: WorkflowTriggerNarrowers | null;
   merge_group?: WorkflowTriggerNarrowers | null;
   push?: WorkflowTriggerNarrowers | null;
-  workflow_dispatch?: WorkflowDispatchOrCall | null;
+  workflow_dispatch?: WorkflowDispatch | null;
   workflow_call?: WorkflowCall;
   schedule?: Schedule[];
   repository_dispatch?: { types?: string[] } | null;

@@ -248,4 +248,61 @@ describe('Workflow', () => {
     expect(yaml).toContain('detect-changes:');
     expect(yaml).toContain('uses: ./.github/workflows/detect-changes.gen.yaml');
   });
+
+  it('serializes workflow_dispatch choice and environment inputs with descriptions', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: {
+        workflow_dispatch: {
+          inputs: {
+            service: {
+              description: "Service to build (or 'all')",
+              type: 'choice',
+              required: true,
+              default: 'all',
+              options: ['all', 'api', 'worker'],
+            },
+            target_env: {
+              description: 'Environment to deploy to',
+              type: 'environment',
+              required: true,
+            },
+          },
+        },
+      },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain("description: Service to build (or 'all')");
+    expect(yaml).toContain('type: choice');
+    expect(yaml).toContain('options:\n          - all\n          - api\n          - worker');
+    expect(yaml).toContain('type: environment');
+    expect(yaml).not.toContain('secrets:');
+  });
+
+  it('omits workflow_dispatch inputs when not provided', () => {
+    const workflow = new Workflow({
+      name: 'CI',
+      trigger: { workflow_dispatch: null },
+      permissions: { 'id-token': 'none', 'contents': 'read', 'pull-requests': 'read', 'actions': 'read', 'checks': 'read' },
+      jobs: {
+        test: new NormalJob({
+          name: 'test',
+          runsOn: RUNS_ON.GITHUB_LATEST,
+          steps: [new BashStep({ name: 'Run tests', run: bash`pnpm test` })],
+        }),
+      },
+    });
+
+    const yaml = workflow.serialize();
+    expect(yaml).toContain('workflow_dispatch:');
+  });
 });
