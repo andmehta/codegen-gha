@@ -83,6 +83,11 @@ function toJobId(id: string | undefined): string | undefined {
   return slug;
 }
 
+export interface JobEnvironment {
+  name: string;
+  url?: string;
+}
+
 export interface NormalJobConf {
   id?: string;
   name: string;
@@ -99,6 +104,7 @@ export interface NormalJobConf {
   continueOnError?: boolean | string;
   defaults?: JobDefaults;
   permissions?: Permissions;
+  environment?: string | JobEnvironment;
 }
 
 export class NormalJob extends WorkflowComponent {
@@ -117,12 +123,13 @@ export class NormalJob extends WorkflowComponent {
   private continueOnError: boolean | string | undefined;
   private defaults: JobDefaults | undefined;
   private permissions: Permissions | undefined;
+  private environment: string | JobEnvironment | undefined;
 
   constructor(conf: NormalJobConf) {
     super();
     const {
       id, services = {}, name, needs = [], steps, runsOn, condition, strategy, timeoutMinutes, env = {}, outputs = {},
-      concurrency, continueOnError, defaults, permissions,
+      concurrency, continueOnError, defaults, permissions, environment,
     } = conf;
     this.id = toJobId(id);
     this.name = name;
@@ -139,6 +146,7 @@ export class NormalJob extends WorkflowComponent {
     this.continueOnError = continueOnError;
     this.defaults = defaults;
     this.permissions = permissions;
+    this.environment = environment;
   }
   public toYaml(): YAML.Document {
     const serviceMap: Record<string, YAML.Document> = {};
@@ -166,6 +174,10 @@ export class NormalJob extends WorkflowComponent {
       'name': this.name,
       'needs': undefinedIfEmpty(this.needs),
       'runs-on': this.runsOn,
+      'environment': typeof this.environment === 'string' ? this.environment : this.environment && {
+        name: this.environment.name,
+        url: this.environment.url,
+      },
       'permissions': this.permissions,
       'timeout-minutes': this.timeoutMinutes,
       'concurrency': concurrencyToYaml(this.concurrency),
