@@ -6,6 +6,10 @@ export type BashString = string & {
 // NUL can't appear in a shell script, so it can't collide with the template's own text.
 const PLACEHOLDER = '\0';
 
+// The only escapes a template literal can't do without: a backtick, and a `${` that isn't interpolation.
+// A run of backslashes before either is read the way JS reads it, so `\\\`` still yields `\``.
+const TEMPLATE_ESCAPE = /(\\+)(`|\$\{)/g;
+
 /**
  * Tags a step's `run:` script, letting it be indented to match the code around it:
  *
@@ -19,10 +23,17 @@ const PLACEHOLDER = '\0';
  *
  * The line break after the opening backtick is dropped, whitespace-only lines are emptied, and the
  * indentation shared by the remaining lines is removed. Interpolated values are inserted unchanged.
+ *
+ * Backslashes reach the shell exactly as written, so `\` line continuations, `\"` and regex escapes work
+ * as they would in a `.sh` file. Only a backtick and a literal `${` need escaping, as `` \` `` and `\${`.
  */
 export function bash(strings: TemplateStringsArray, ...values: unknown[]): BashString {
-  const parts = dedent(strings.join(PLACEHOLDER)).split(PLACEHOLDER);
+  const parts = dedent(strings.raw.map(unescapeTemplateSyntax).join(PLACEHOLDER)).split(PLACEHOLDER);
   return parts.reduce((script, part, i) => `${script}${values[i - 1]}${part}`) as BashString;
+}
+
+function unescapeTemplateSyntax(raw: string): string {
+  return raw.replace(TEMPLATE_ESCAPE, (_, backslashes: string, escaped: string) => '\\'.repeat((backslashes.length - 1) / 2) + escaped);
 }
 
 function dedent(text: string): string {

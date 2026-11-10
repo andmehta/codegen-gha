@@ -90,6 +90,35 @@ jobs:
           pnpm test
 ```
 
+### Shell scripts
+
+`bash` tags a step's `run:` script. Indent it to match the code around it; the indentation every line shares is removed, along with the line break after the opening backtick and whitespace before the closing one:
+
+```ts
+new BashStep({
+  name: 'Build image',
+  run: bash`
+    if [ -n "$PUSH" ]; then
+      docker build \
+        --tag "$IMAGE" \
+        --push .
+    fi
+  `,
+});
+```
+
+```yaml
+- name: Build image
+  run: |
+    if [ -n "$PUSH" ]; then
+      docker build \
+        --tag "$IMAGE" \
+        --push .
+    fi
+```
+
+Backslashes reach the shell exactly as written, so line continuations, `\"`, `\$` and regex escapes behave as they would in a `.sh` file. Only two things need escaping, because a template literal can't hold them otherwise: a backtick (`` \` ``) and a `${` that isn't an interpolation (`\${`). Interpolated values (`${value}`) are inserted unchanged.
+
 ## Generating workflow files
 
 `codegen-gha` ships a `cgha` CLI.

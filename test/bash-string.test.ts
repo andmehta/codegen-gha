@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { bash } from '../src/components/bash-string.ts';
 import { BashStep } from '../src/components/step.ts';
 
+// Builds the template a source file would hold, for text such as tab indentation that's unreadable inline
+function bashFrom(source: string) {
+  return bash(Object.assign([source], { raw: [source] }));
+}
+
 describe('bash', () => {
   it('leaves a single line as-is', () => {
     expect(bash`pnpm test`).toBe('pnpm test');
@@ -32,25 +37,15 @@ pnpm test
   });
 
   it('empties whitespace-only lines and ignores them when dedenting', () => {
-    expect(bash`
-        echo one
-  \t
-        echo two
-    `).toBe('echo one\n\necho two\n');
+    expect(bashFrom('\n        echo one\n  \t\n        echo two\n    ')).toBe('echo one\n\necho two\n');
   });
 
   it('removes indentation made of tabs', () => {
-    expect(bash`
-\t\techo one
-\t\t\techo two
-\t`).toBe('echo one\n\techo two\n');
+    expect(bashFrom('\n\t\techo one\n\t\t\techo two\n\t')).toBe('echo one\n\techo two\n');
   });
 
   it('only removes indentation that every line shares exactly', () => {
-    expect(bash`
-\t  echo tab
-  \techo space
-`).toBe('\t  echo tab\n  \techo space\n');
+    expect(bashFrom('\n\t  echo tab\n  \techo space\n')).toBe('\t  echo tab\n  \techo space\n');
   });
 
   it('inserts interpolated values without dedenting them', () => {
@@ -74,6 +69,34 @@ pnpm test
     expect(bash``).toBe('');
     expect(bash`
     `).toBe('');
+  });
+
+  describe('backslashes', () => {
+    it('keeps line continuations', () => {
+      const script = bash`
+        jq -n \
+          --arg name "$NAME"
+      `;
+      expect(script).toBe('jq -n \\\n  --arg name "$NAME"\n');
+    });
+
+    it.each([
+      [bash`echo "{\"a\": 1}"`, 'echo "{\\"a\\": 1}"'],
+      [bash`grep 'v1\.2'`, "grep 'v1\\.2'"],
+      [bash`echo "\$HOME"`, 'echo "\\$HOME"'],
+      [bash`printf 'a\nb\t'`, "printf 'a\\nb\\t'"],
+      [bash`echo C:\\dir`, 'echo C:\\\\dir'],
+    ])('passes %j to the shell as written', (script, expected) => {
+      expect(script).toBe(expected);
+    });
+
+    it('unescapes a backtick and a literal ${', () => {
+      expect(bash`echo \`date\` \${HOME}`).toBe('echo `date` ${HOME}');
+    });
+
+    it('keeps an escaped backslash before a backtick or ${', () => {
+      expect(bash`echo \\\` \\\${HOME}`).toBe('echo \\` \\${HOME}');
+    });
   });
 
   it('serializes an indented script as a block literal', () => {
