@@ -25,11 +25,11 @@ const PACK_STEP = new BashStep({
   name: 'Pack codegen-gha',
   id: 'pack',
   run: bash`
-pnpm compile
-pnpm post-compile
-pnpm package
-echo "tarball=$(ls "$PWD"/dist/js/codegen-gha-*.tgz)" >> "$GITHUB_OUTPUT"
-`,
+    pnpm compile
+    pnpm post-compile
+    pnpm package
+    echo "tarball=$(ls "$PWD"/dist/js/codegen-gha-*.tgz)" >> "$GITHUB_OUTPUT"
+  `,
   shell: 'bash',
 });
 
@@ -53,112 +53,112 @@ export const e2eInit = new Workflow({
           name: 'Install the tarball into an empty project',
           env: { TARBALL: ghaTemplateString(stepOutput(PACK_STEP, 'tarball')) },
           run: bash`
-mkdir -p ${CONSUMER_DIR}
-cd ${CONSUMER_DIR}
-pnpm init
-pnpm add "$TARBALL"
-`,
+            mkdir -p ${CONSUMER_DIR}
+            cd ${CONSUMER_DIR}
+            pnpm init
+            pnpm add "$TARBALL"
+          `,
           shell: 'bash',
         }),
         new BashStep({
           name: 'cgha init writes the starter files',
           run: bash`
-cd ${CONSUMER_DIR}
-pnpm exec cgha init
+            cd ${CONSUMER_DIR}
+            pnpm exec cgha init
 
-for f in codegen-gha.yaml workflows/example.ts workflows/verify-generation.ts lib/index.ts; do
-  if [ ! -f "$f" ]; then
-    echo "::error::cgha init did not write $f"
-    exit 1
-  fi
-done
-`,
+            for f in codegen-gha.yaml workflows/example.ts workflows/verify-generation.ts lib/index.ts; do
+              if [ ! -f "$f" ]; then
+                echo "::error::cgha init did not write $f"
+                exit 1
+              fi
+            done
+          `,
           shell: 'bash',
         }),
         new BashStep({
           name: 'cgha generate writes workflows from them',
           run: bash`
-cd ${CONSUMER_DIR}
-pnpm exec cgha generate
+            cd ${CONSUMER_DIR}
+            pnpm exec cgha generate
 
-for f in .github/workflows/example.gen.yaml .github/workflows/verify-generation.gen.yaml; do
-  if [ ! -f "$f" ]; then
-    echo "::error::cgha generate did not write $f"
-    exit 1
-  fi
-done
-`,
+            for f in .github/workflows/example.gen.yaml .github/workflows/verify-generation.gen.yaml; do
+              if [ ! -f "$f" ]; then
+                echo "::error::cgha generate did not write $f"
+                exit 1
+              fi
+            done
+          `,
           shell: 'bash',
         }),
         new BashStep({
           name: 'Generated workflows pass actionlint',
           run: bash`
-cd ${CONSUMER_DIR}
-bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-./actionlint .github/workflows/*.gen.yaml
-`,
+            cd ${CONSUMER_DIR}
+            bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+            ./actionlint .github/workflows/*.gen.yaml
+          `,
           shell: 'bash',
         }),
         new BashStep({
           name: 'Regenerating is a no-op',
           run: bash`
-cd ${CONSUMER_DIR}
-echo node_modules > .gitignore
-rm -f actionlint
-git init --quiet
-git add -A
-git -c user.name=e2e -c user.email=e2e@example.com commit --quiet -m 'cgha init'
+            cd ${CONSUMER_DIR}
+            echo node_modules > .gitignore
+            rm -f actionlint
+            git init --quiet
+            git add -A
+            git -c user.name=e2e -c user.email=e2e@example.com commit --quiet -m 'cgha init'
 
-pnpm exec cgha generate
+            pnpm exec cgha generate
 
-if [ -n "$(git status --porcelain)" ]; then
-  echo "::error::A second cgha generate changed files it had already generated"
-  git status --porcelain
-  git diff
-  exit 1
-fi
-`,
+            if [ -n "$(git status --porcelain)" ]; then
+              echo "::error::A second cgha generate changed files it had already generated"
+              git status --porcelain
+              git diff
+              exit 1
+            fi
+          `,
           shell: 'bash',
         }),
         new BashStep({
           name: 'Deleting a workflow source removes its generated file',
           run: bash`
-cd ${CONSUMER_DIR}
-rm workflows/example.ts
+            cd ${CONSUMER_DIR}
+            rm workflows/example.ts
 
-pnpm exec cgha generate
+            pnpm exec cgha generate
 
-if [ -e .github/workflows/example.gen.yaml ]; then
-  echo "::error::cgha generate kept example.gen.yaml after workflows/example.ts was deleted"
-  exit 1
-fi
-if [ ! -f .github/workflows/verify-generation.gen.yaml ]; then
-  echo "::error::cgha generate removed verify-generation.gen.yaml, whose source still exists"
-  exit 1
-fi
-`,
+            if [ -e .github/workflows/example.gen.yaml ]; then
+              echo "::error::cgha generate kept example.gen.yaml after workflows/example.ts was deleted"
+              exit 1
+            fi
+            if [ ! -f .github/workflows/verify-generation.gen.yaml ]; then
+              echo "::error::cgha generate removed verify-generation.gen.yaml, whose source still exists"
+              exit 1
+            fi
+          `,
           shell: 'bash',
         }),
         new BashStep({
           name: 'Unsupported TypeScript fails with a hint',
           run: bash`
-cd ${CONSUMER_DIR}
-cat > workflows/enum.ts <<'EOF'
-enum Color { Red }
-export const color = Color.Red;
-EOF
+            cd ${CONSUMER_DIR}
+            cat > workflows/enum.ts <<'EOF'
+            enum Color { Red }
+            export const color = Color.Red;
+            EOF
 
-if output=$(pnpm exec cgha generate 2>&1); then
-  echo "::error::cgha generate succeeded on a workflow file using an enum"
-  exit 1
-fi
-if ! grep -q 'no enums' <<<"$output"; then
-  echo "::error::cgha generate failed without the type stripping hint"
-  echo "$output"
-  exit 1
-fi
-rm workflows/enum.ts
-`,
+            if output=$(pnpm exec cgha generate 2>&1); then
+              echo "::error::cgha generate succeeded on a workflow file using an enum"
+              exit 1
+            fi
+            if ! grep -q 'no enums' <<<"$output"; then
+              echo "::error::cgha generate failed without the type stripping hint"
+              echo "$output"
+              exit 1
+            fi
+            rm workflows/enum.ts
+          `,
           shell: 'bash',
         }),
       ],

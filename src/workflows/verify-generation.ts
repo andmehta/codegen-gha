@@ -9,21 +9,21 @@ const VERIFY_STEP = new BashStep({
   name: 'Verify generated workflow files are up to date',
   id: 'verify',
   run: bash`
-pnpm run generate
+    pnpm run generate
 
-# Mark new files as intent-to-add so they show up in the diff against HEAD
-git add --intent-to-add .
-diff=$(git diff HEAD)
+    # Mark new files as intent-to-add so they show up in the diff against HEAD
+    git add --intent-to-add .
+    diff=$(git diff HEAD)
 
-if [ -n "$diff" ]; then
-  {
-    echo "diff<<GENERATION_DIFF_EOF"
-    echo "$diff"
-    echo "GENERATION_DIFF_EOF"
-  } >> "$GITHUB_OUTPUT"
-  echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
-fi
-`,
+    if [ -n "$diff" ]; then
+      {
+        echo "diff<<GENERATION_DIFF_EOF"
+        echo "$diff"
+        echo "GENERATION_DIFF_EOF"
+      } >> "$GITHUB_OUTPUT"
+      echo "::error::Generated workflow files are out of date. Run 'pnpm run generate' and commit the result."
+    fi
+  `,
   shell: 'bash',
 });
 
@@ -55,18 +55,18 @@ export const verifyGeneration = new Workflow({
           condition: HAS_DIFF,
           env: { DIFF },
           run: bash`
-{
-  cat <<'EOF'
-## Generated workflow files are out of date
+            {
+              cat <<'EOF'
+            ## Generated workflow files are out of date
 
-Run \`pnpm run generate\` and commit the result.
+            Run \`pnpm run generate\` and commit the result.
 
-\`\`\`diff
-EOF
-  echo "$DIFF"
-  echo '\`\`\`'
-} >> "$GITHUB_STEP_SUMMARY"
-`,
+            \`\`\`diff
+            EOF
+              echo "$DIFF"
+              echo '\`\`\`'
+            } >> "$GITHUB_STEP_SUMMARY"
+          `,
           shell: 'bash',
         }),
         new ActionStep({
