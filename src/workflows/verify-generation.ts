@@ -31,7 +31,8 @@ const HAS_DIFF = IfCondition.stepOutputNotNull(VERIFY_STEP, 'diff');
 const NO_DIFF = IfCondition.stepOutputNull(VERIFY_STEP, 'diff');
 const DIFF = ghaTemplateString(stepOutput(VERIFY_STEP, 'diff'));
 
-const STICKY_COMMENT = 'marocchino/sticky-pull-request-comment@v3.0.5';
+const STICKY_COMMENT = 'marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88';
+const STICKY_COMMENT_VERSION = 'v3.0.5';
 const COMMENT_HEADER = 'codegen-gha-verify-generation';
 
 
@@ -74,6 +75,7 @@ export const verifyGeneration = new Workflow({
           // push events to main have no PR to comment on
           condition: IfCondition.isPullRequest().and(HAS_DIFF),
           actionSpecifier: STICKY_COMMENT,
+          versionComment: STICKY_COMMENT_VERSION,
           params: {
             header: COMMENT_HEADER,
             // Collapse the previous diff as outdated and post the current one
@@ -95,6 +97,7 @@ export const verifyGeneration = new Workflow({
           // A no-op when this PR has no visible diff comment
           condition: IfCondition.isPullRequest().and(NO_DIFF),
           actionSpecifier: STICKY_COMMENT,
+          versionComment: STICKY_COMMENT_VERSION,
           params: {
             header: COMMENT_HEADER,
             hide: true,

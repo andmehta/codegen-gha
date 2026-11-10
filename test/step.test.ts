@@ -102,6 +102,25 @@ describe('BashStep working-directory', () => {
   });
 });
 
+describe('ActionStep versionComment', () => {
+  it('emits it as a trailing comment on the uses: line', () => {
+    const step = new ActionStep({
+      name: 'x',
+      actionSpecifier: 'actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8',
+      versionComment: 'v5.0.0',
+      params: {},
+    });
+    expect(step.toYaml().toString()).toContain(
+      'uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0',
+    );
+  });
+
+  it('omits the comment when not provided', () => {
+    const step = new ActionStep({ name: 'x', actionSpecifier: 'actions/checkout@v6', params: {} });
+    expect(step.toYaml().toString()).not.toContain('#');
+  });
+});
+
 describe('BashStep shell', () => {
   it('omits the shell key when not provided, falling back to job defaults', () => {
     const step = new BashStep({ name: 'x', run: bash`true` });
