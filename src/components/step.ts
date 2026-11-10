@@ -85,6 +85,11 @@ export interface ActionStepConf {
   condition?: IfCondition;
   continueOnError?: boolean | string;
   timeoutMinutes?: number;
+  /**
+   * Trailing comment on the `uses:` line, e.g. `v5.0.0`.
+   * Lets Dependabot and Renovate resolve a SHA-pinned action to a version.
+   */
+  versionComment?: string;
 }
 
 type PublicActionSpecifierVersioned = `${string}/${string}@v${number}`;
@@ -102,10 +107,11 @@ export class ActionStep extends WorkflowComponent {
   private condition: IfCondition | undefined;
   private continueOnError: boolean | string | undefined;
   private timeoutMinutes: number | undefined;
+  private versionComment: string | undefined;
 
   constructor(conf: ActionStepConf) {
     super();
-    const { name, actionSpecifier, params, env, id, condition, continueOnError, timeoutMinutes } = conf;
+    const { name, actionSpecifier, params, env, id, condition, continueOnError, timeoutMinutes, versionComment } = conf;
     this.name = name;
     this.actionSpecifier = actionSpecifier;
     this.params = params;
@@ -114,9 +120,10 @@ export class ActionStep extends WorkflowComponent {
     this.condition = condition;
     this.continueOnError = continueOnError;
     this.timeoutMinutes = timeoutMinutes;
+    this.versionComment = versionComment;
   }
   public toYaml(): YAML.Document {
-    return new YAML.Document({
+    const doc = new YAML.Document({
       'name': this.name,
       'id': this.id,
       'if': this.condition?.toYaml(),
@@ -126,6 +133,13 @@ export class ActionStep extends WorkflowComponent {
       'timeout-minutes': this.timeoutMinutes,
       'with': undefinedIfEmpty(this.params),
     });
+    if (this.versionComment !== undefined) {
+      const usesNode = doc.get('uses', true);
+      if (YAML.isScalar(usesNode)) {
+        usesNode.comment = ` ${this.versionComment}`;
+      }
+    }
+    return doc;
   }
 }
 
