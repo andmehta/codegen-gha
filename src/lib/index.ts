@@ -8,18 +8,21 @@ import { ActionStep } from '../components/step.ts';
 
 export const checkout = new ActionStep({
   name: 'Checkout',
-  actionSpecifier: 'actions/checkout@v7',
+  actionSpecifier: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1',
+  versionComment: 'v7.0.1',
   params: {},
 });
 
 export const setupNode = new ActionStep({
   name: 'Setup Node.js',
-  actionSpecifier: 'actions/setup-node@v6',
+  actionSpecifier: 'actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38',
+  versionComment: 'v6.5.0',
   params: { 'node-version': 'lts/*' },
 });
 
 export const setupPnpm = new ActionStep({
   name: 'Setup pnpm',
-  actionSpecifier: 'pnpm/setup@v1',
+  actionSpecifier: 'pnpm/setup@5d160c5bc68a09337ad0d5654e237e03253b5879',
+  versionComment: 'v1.0.0',
   params: { cache: true, install: false },
 });

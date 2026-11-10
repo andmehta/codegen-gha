@@ -14,7 +14,8 @@ import { checkout, setupPnpm } from '../lib/index.ts';
 // if cgha starts relying on anything newer
 const SETUP_MIN_NODE = new ActionStep({
   name: 'Setup the minimum supported Node.js',
-  actionSpecifier: 'actions/setup-node@v6',
+  actionSpecifier: 'actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38',
+  versionComment: 'v6.5.0',
   params: { 'node-version': '22.18.0' },
 });
 
