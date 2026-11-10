@@ -195,6 +195,36 @@ describe('NormalJob', () => {
   });
 });
 
+describe('NormalJob environment', () => {
+  const steps = [new BashStep({ name: 'Deploy', run: bash`./deploy.sh` })];
+
+  it('serializes a string environment directly after runs-on', () => {
+    const job = new NormalJob({ name: 'deploy', needs: ['build'], runsOn: RUNS_ON.GITHUB_LATEST, environment: 'staging', steps });
+
+    expect(job.toYaml().toJSON()).toMatchObject({ environment: 'staging' });
+    expect(Object.keys(job.toYaml().toJSON())).toEqual(['name', 'needs', 'runs-on', 'environment', 'steps']);
+  });
+
+  it('serializes an environment with a url', () => {
+    const job = new NormalJob({
+      name: 'deploy',
+      runsOn: RUNS_ON.GITHUB_LATEST,
+      environment: { name: 'staging', url: '${{ steps.deploy.outputs.url }}' },
+      steps,
+    });
+
+    expect(job.toYaml().toJSON()).toMatchObject({
+      environment: { name: 'staging', url: '${{ steps.deploy.outputs.url }}' },
+    });
+  });
+
+  it('omits environment when not set', () => {
+    const job = new NormalJob({ name: 'deploy', runsOn: RUNS_ON.GITHUB_LATEST, steps });
+
+    expect(job.toYaml().toJSON()).not.toHaveProperty('environment');
+  });
+});
+
 describe('jobOutput', () => {
   it('references another job\'s output by id', () => {
     const job = new NormalJob({
